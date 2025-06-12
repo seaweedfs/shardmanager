@@ -1,0 +1,90 @@
+syntax = "proto3";
+
+package shardmanagerpb;
+
+option go_package = "github.com/seaweedfs/shardmanager/shardmanagerpb";
+
+service NodeService {
+  rpc RegisterNode(RegisterNodeRequest) returns (RegisterNodeResponse);
+  rpc Heartbeat(HeartbeatRequest) returns (HeartbeatResponse);
+  rpc ListNodes(ListNodesRequest) returns (ListNodesResponse);
+}
+
+service ShardService {
+  rpc RegisterShard(RegisterShardRequest) returns (RegisterShardResponse);
+  rpc ListShards(ListShardsRequest) returns (ListShardsResponse);
+  rpc GetShardInfo(GetShardInfoRequest) returns (GetShardInfoResponse);
+  rpc AssignShard(AssignShardRequest) returns (AssignShardResponse);
+  rpc MigrateShard(MigrateShardRequest) returns (MigrateShardResponse);
+  rpc UpdateShardStatus(UpdateShardStatusRequest) returns (UpdateShardStatusResponse);
+}
+
+service PolicyService {
+  rpc SetPolicy(SetPolicyRequest) returns (SetPolicyResponse);
+  rpc GetPolicy(GetPolicyRequest) returns (GetPolicyResponse);
+}
+
+service MonitoringService {
+  rpc GetDistribution(GetDistributionRequest) returns (GetDistributionResponse);
+  rpc GetHealth(GetHealthRequest) returns (GetHealthResponse);
+}
+
+service FailureService {
+  rpc ReportFailure(ReportFailureRequest) returns (ReportFailureResponse);
+}
+
+// --- Messages ---
+
+message Node {
+  string id = 1;
+  string location = 2;
+  int64 capacity = 3;
+  string status = 4;
+}
+
+message Shard {
+  string id = 1;
+  string type = 2;
+  int64 size = 3;
+  string node_id = 4;
+  string status = 5;
+}
+
+// NodeService messages
+message RegisterNodeRequest { Node node = 1; }
+message RegisterNodeResponse { bool success = 1; string message = 2; }
+message HeartbeatRequest { string node_id = 1; string status = 2; int64 load = 3; }
+message HeartbeatResponse { bool success = 1; }
+message ListNodesRequest {}
+message ListNodesResponse { repeated Node nodes = 1; }
+
+// ShardService messages
+message RegisterShardRequest { Shard shard = 1; }
+message RegisterShardResponse { bool success = 1; string message = 2; }
+message ListShardsRequest {}
+message ListShardsResponse { repeated Shard shards = 1; }
+message GetShardInfoRequest { string shard_id = 1; }
+message GetShardInfoResponse { Shard shard = 1; }
+message AssignShardRequest { string shard_id = 1; string node_id = 2; }
+message AssignShardResponse { bool success = 1; string message = 2; }
+message MigrateShardRequest { string shard_id = 1; string from_node_id = 2; string to_node_id = 3; }
+message MigrateShardResponse { bool success = 1; string message = 2; }
+message UpdateShardStatusRequest { string shard_id = 1; string status = 2; }
+message UpdateShardStatusResponse { bool success = 1; string message = 2; }
+
+// PolicyService messages
+message SetPolicyRequest { string policy_type = 1; string parameters = 2; }
+message SetPolicyResponse { bool success = 1; string message = 2; }
+message GetPolicyRequest { string policy_type = 1; }
+message GetPolicyResponse { string policy_type = 1; string parameters = 2; }
+
+// MonitoringService messages
+message GetDistributionRequest {}
+message GetDistributionResponse { map<string, ShardList> node_shards = 1; }
+message ShardList { repeated string shard_ids = 1; }
+message GetHealthRequest {}
+message GetHealthResponse { string summary = 1; }
+
+// FailureService messages
+message ReportFailureRequest { string type = 1; string id = 2; string details = 3; }
+message ReportFailureResponse { bool success = 1; string message = 2; } 
