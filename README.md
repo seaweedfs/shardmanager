@@ -1,5 +1,9 @@
 # Shard Manager
 
+> ⚠️ **DRAFT IMPLEMENTATION** ⚠️
+> 
+> This is an early draft implementation of the Shard Manager framework. The code is not yet ready for production use and may contain bugs or incomplete features. Use at your own risk.
+
 A distributed shard management service providing efficient and reliable shard management capabilities, based on the research paper "Shard Manager: A Generic Shard Management Framework for Geo-distributed Applications" (SIGMOD '21).
 
 ## Overview
