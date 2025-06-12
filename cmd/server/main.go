@@ -17,7 +17,7 @@ import (
 )
 
 var (
-	port   = flag.Int("port", 50051, "The server port")
+	port   = flag.Int("port", 7427, "The server port")
 	dbConn = flag.String("db", "postgres://postgres:postgres@localhost:5432/shardmanager?sslmode=disable", "Database connection string")
 )
 
