@@ -14,7 +14,6 @@ The Shard Manager is a service that helps manage and coordinate shards in distri
 
 This project implements concepts from the paper:
 "Shard Manager: A Generic Shard Management Framework for Geo-distributed Applications"
-Authors: [Authors from the paper]
 Published in: SIGMOD '21
 DOI: [10.1145/3477132.3483546](https://dl.acm.org/doi/pdf/10.1145/3477132.3483546)
 
