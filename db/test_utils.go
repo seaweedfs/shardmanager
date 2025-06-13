@@ -1,70 +1,77 @@
 package db
 
 import (
+	"database/sql"
+	"os"
 	"testing"
 
+	_ "github.com/mattn/go-sqlite3"
 	"github.com/stretchr/testify/require"
 )
 
-var testDB *DB
+var testDBFile = "test_shardmanager.db"
 
-func setupTestDB(t *testing.T) {
-	// Use a test database
-	dsn := "postgres://postgres:postgres@localhost:5432/shardmanager_test?sslmode=disable"
-	var err error
-	testDB, err = NewDB(dsn)
+// setupTestDB creates a new file-based SQLite database for testing
+func setupTestDB(t *testing.T) *sql.DB {
+	// Remove any existing test DB file
+	_ = os.Remove(testDBFile)
+	db, err := sql.Open("sqlite3", testDBFile)
 	require.NoError(t, err)
 
-	// Create test tables
-	_, err = testDB.Exec(`
+	// Create tables
+	_, err = db.Exec(`
 		CREATE TABLE IF NOT EXISTS nodes (
-			id UUID PRIMARY KEY,
+			id TEXT PRIMARY KEY,
 			location TEXT NOT NULL,
-			capacity BIGINT NOT NULL,
+			capacity INTEGER NOT NULL,
 			status TEXT NOT NULL,
-			last_heartbeat TIMESTAMP WITH TIME ZONE,
-			current_load BIGINT,
-			created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
-			updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+			last_heartbeat TIMESTAMP,
+			current_load INTEGER NOT NULL DEFAULT 0,
+			created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+			updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
 		);
 
 		CREATE TABLE IF NOT EXISTS shards (
-			id UUID PRIMARY KEY,
+			id TEXT PRIMARY KEY,
+			node_id TEXT NOT NULL,
 			type TEXT NOT NULL,
-			size BIGINT NOT NULL,
-			node_id UUID REFERENCES nodes(id),
 			status TEXT NOT NULL,
-			created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
-			updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+			size INTEGER NOT NULL,
+			created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+			updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+			FOREIGN KEY (node_id) REFERENCES nodes(id)
 		);
 
 		CREATE TABLE IF NOT EXISTS policies (
-			id UUID PRIMARY KEY,
-			policy_type TEXT NOT NULL,
-			parameters JSONB NOT NULL,
-			created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
-			updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+			id TEXT PRIMARY KEY,
+			name TEXT NOT NULL,
+			description TEXT,
+			type TEXT NOT NULL,
+			conditions TEXT NOT NULL,
+			actions TEXT NOT NULL,
+			created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+			updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
 		);
 
-		CREATE TABLE IF NOT EXISTS failure_reports (
-			id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+		CREATE TABLE IF NOT EXISTS failures (
+			id TEXT PRIMARY KEY,
+			node_id TEXT NOT NULL,
+			shard_id TEXT NOT NULL,
 			type TEXT NOT NULL,
-			entity_id UUID NOT NULL,
-			details JSONB NOT NULL,
-			created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+			message TEXT NOT NULL,
+			created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+			FOREIGN KEY (node_id) REFERENCES nodes(id),
+			FOREIGN KEY (shard_id) REFERENCES shards(id)
 		);
 	`)
 	require.NoError(t, err)
+
+	return db
 }
 
-func teardownTestDB(t *testing.T) {
-	// Drop test tables
-	_, err := testDB.Exec(`
-		DROP TABLE IF EXISTS failure_reports;
-		DROP TABLE IF EXISTS policies;
-		DROP TABLE IF EXISTS shards;
-		DROP TABLE IF EXISTS nodes;
-	`)
+// cleanupTestDB closes the test database connection and removes the file
+func cleanupTestDB(t *testing.T, db *sql.DB) {
+	err := db.Close()
 	require.NoError(t, err)
-	testDB.Close()
+	_ = os.Remove(testDBFile)
 }

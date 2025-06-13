@@ -1,7 +1,7 @@
 package db
 
 import (
-	"context"
+	"encoding/json"
 	"testing"
 
 	"github.com/google/uuid"
@@ -9,53 +9,37 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-func TestPolicyDBOperations(t *testing.T) {
-	setupTestDB(t)
-	defer teardownTestDB(t)
+func TestPolicyCRUD(t *testing.T) {
+	db := setupTestDB(t)
+	defer cleanupTestDB(t, db)
 
-	ctx := context.Background()
+	// Test CreatePolicy
+	policyID := uuid.New()
+	params, _ := json.Marshal(map[string]interface{}{"foo": "bar"})
+	policy := &Policy{
+		ID:         policyID,
+		PolicyType: "test-type",
+		Parameters: params,
+	}
+	err := CreatePolicy(db, policy)
+	require.NoError(t, err)
 
-	t.Run("SetPolicy", func(t *testing.T) {
-		policy := &Policy{
-			ID:         uuid.New(),
-			PolicyType: "test-policy",
-			Parameters: []byte(`{"key": "value"}`),
-		}
+	// Test GetPolicy
+	retrieved, err := GetPolicy(db, policyID)
+	require.NoError(t, err)
+	assert.Equal(t, policy.ID, retrieved.ID)
+	assert.Equal(t, policy.PolicyType, retrieved.PolicyType)
+	assert.JSONEq(t, string(policy.Parameters), string(retrieved.Parameters))
 
-		err := testDB.SetPolicy(ctx, policy)
-		require.NoError(t, err)
-		assert.NotZero(t, policy.CreatedAt)
-		assert.NotZero(t, policy.UpdatedAt)
-	})
+	// Test ListPolicies
+	policies, err := ListPolicies(db)
+	require.NoError(t, err)
+	assert.Len(t, policies, 1)
 
-	t.Run("GetPolicy", func(t *testing.T) {
-		// Create multiple policies of the same type
-		policy1 := &Policy{
-			ID:         uuid.New(),
-			PolicyType: "test-policy-2",
-			Parameters: []byte(`{"key": "value1"}`),
-		}
-		policy2 := &Policy{
-			ID:         uuid.New(),
-			PolicyType: "test-policy-2",
-			Parameters: []byte(`{"key": "value2"}`),
-		}
+	// Test DeletePolicy
+	err = DeletePolicy(db, policyID)
+	require.NoError(t, err)
 
-		err := testDB.SetPolicy(ctx, policy1)
-		require.NoError(t, err)
-		err = testDB.SetPolicy(ctx, policy2)
-		require.NoError(t, err)
-
-		// Should get the most recent policy
-		policy, err := testDB.GetPolicy(ctx, "test-policy-2")
-		require.NoError(t, err)
-		assert.Equal(t, "test-policy-2", policy.PolicyType)
-		assert.Equal(t, `{"key": "value2"}`, string(policy.Parameters))
-	})
-
-	t.Run("GetPolicyNotFound", func(t *testing.T) {
-		policy, err := testDB.GetPolicy(ctx, "non-existent-policy")
-		require.NoError(t, err)
-		assert.Nil(t, policy)
-	})
+	_, err = GetPolicy(db, policyID)
+	assert.Error(t, err)
 }

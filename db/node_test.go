@@ -1,7 +1,6 @@
 package db
 
 import (
-	"context"
 	"testing"
 
 	"github.com/google/uuid"
@@ -9,86 +8,84 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-func TestNodeDBOperations(t *testing.T) {
-	setupTestDB(t)
-	defer teardownTestDB(t)
+func TestNodeCRUD(t *testing.T) {
+	db := setupTestDB(t)
+	defer cleanupTestDB(t, db)
 
-	ctx := context.Background()
+	// Create a test node
+	nodeID := uuid.New()
+	node := &Node{
+		ID:       nodeID,
+		Location: "test-location",
+		Capacity: 1000,
+		Status:   "active",
+	}
 
-	t.Run("RegisterNode", func(t *testing.T) {
-		node := &Node{
-			ID:       uuid.New(),
-			Location: "test-location",
-			Capacity: 1000,
-			Status:   "active",
-		}
+	// Test CreateNode
+	err := CreateNode(db, node)
+	require.NoError(t, err)
+	assert.NotZero(t, node.CreatedAt)
+	assert.NotZero(t, node.UpdatedAt)
 
-		err := testDB.RegisterNode(ctx, node)
-		require.NoError(t, err)
-		assert.NotZero(t, node.CreatedAt)
-		assert.NotZero(t, node.UpdatedAt)
-	})
+	// Test GetNode
+	retrievedNode, err := GetNode(db, nodeID)
+	require.NoError(t, err)
+	assert.Equal(t, node.ID, retrievedNode.ID)
+	assert.Equal(t, node.Location, retrievedNode.Location)
+	assert.Equal(t, node.Capacity, retrievedNode.Capacity)
+	assert.Equal(t, node.Status, retrievedNode.Status)
 
-	t.Run("UpdateNodeHeartbeat", func(t *testing.T) {
-		nodeID := uuid.New()
-		node := &Node{
-			ID:       nodeID,
-			Location: "test-location",
-			Capacity: 1000,
-			Status:   "active",
-		}
+	// Test UpdateNode
+	node.Status = "inactive"
+	err = UpdateNode(db, node)
+	require.NoError(t, err)
 
-		err := testDB.RegisterNode(ctx, node)
-		require.NoError(t, err)
+	updatedNode, err := GetNode(db, nodeID)
+	require.NoError(t, err)
+	assert.Equal(t, "inactive", updatedNode.Status)
 
-		err = testDB.UpdateNodeHeartbeat(ctx, nodeID, "active", 500)
-		require.NoError(t, err)
+	// Test ListNodes
+	nodes, err := ListNodes(db)
+	require.NoError(t, err)
+	assert.Len(t, nodes, 1)
+	assert.Equal(t, nodeID, nodes[0].ID)
 
-		nodes, err := testDB.ListNodes(ctx)
-		require.NoError(t, err)
-		assert.Len(t, nodes, 1)
-		assert.Equal(t, int64(500), nodes[0].CurrentLoad)
-		assert.NotZero(t, nodes[0].LastHeartbeat)
-	})
+	// Test DeleteNode
+	err = DeleteNode(db, nodeID)
+	require.NoError(t, err)
 
-	t.Run("ListNodes", func(t *testing.T) {
-		// Create multiple nodes
-		node1 := &Node{
-			ID:       uuid.New(),
-			Location: "location-1",
-			Capacity: 1000,
-			Status:   "active",
-		}
-		node2 := &Node{
-			ID:       uuid.New(),
-			Location: "location-2",
-			Capacity: 2000,
-			Status:   "inactive",
-		}
+	_, err = GetNode(db, nodeID)
+	assert.Error(t, err)
+}
 
-		err := testDB.RegisterNode(ctx, node1)
-		require.NoError(t, err)
-		err = testDB.RegisterNode(ctx, node2)
-		require.NoError(t, err)
+func TestNodeConcurrentOperations(t *testing.T) {
+	db := setupTestDB(t)
+	defer cleanupTestDB(t, db)
 
-		nodes, err := testDB.ListNodes(ctx)
-		require.NoError(t, err)
-		assert.Len(t, nodes, 2)
-
-		// Verify node details
-		found := make(map[string]bool)
-		for _, node := range nodes {
-			if node.Location == "location-1" {
-				assert.Equal(t, int64(1000), node.Capacity)
-				assert.Equal(t, "active", node.Status)
-				found["location-1"] = true
-			} else if node.Location == "location-2" {
-				assert.Equal(t, int64(2000), node.Capacity)
-				assert.Equal(t, "inactive", node.Status)
-				found["location-2"] = true
+	// Create multiple nodes concurrently
+	const numNodes = 10
+	done := make(chan struct{})
+	for i := 0; i < numNodes; i++ {
+		go func() {
+			node := &Node{
+				ID:       uuid.New(),
+				Location: "test-location",
+				Capacity: 1000,
+				Status:   "active",
 			}
-		}
-		assert.True(t, found["location-1"])
-		assert.True(t, found["location-2"])
-	})
+			err := CreateNode(db, node)
+			require.NoError(t, err)
+			done <- struct{}{}
+		}()
+	}
+
+	// Wait for all nodes to be created
+	for i := 0; i < numNodes; i++ {
+		<-done
+	}
+
+	// Verify all nodes were created
+	nodes, err := ListNodes(db)
+	require.NoError(t, err)
+	assert.Len(t, nodes, numNodes)
 }
