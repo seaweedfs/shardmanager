@@ -1550,6 +1550,543 @@ func (x *ReportFailureResponse) GetMessage() string {
 	return ""
 }
 
+// AppShardService messages
+type AddShardRequest struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	ShardId       string                 `protobuf:"bytes,1,opt,name=shard_id,json=shardId,proto3" json:"shard_id,omitempty"`
+	Role          string                 `protobuf:"bytes,2,opt,name=role,proto3" json:"role,omitempty"` // "primary" or "secondary"
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *AddShardRequest) Reset() {
+	*x = AddShardRequest{}
+	mi := &file_shardmanager_proto_msgTypes[31]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *AddShardRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*AddShardRequest) ProtoMessage() {}
+
+func (x *AddShardRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_shardmanager_proto_msgTypes[31]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use AddShardRequest.ProtoReflect.Descriptor instead.
+func (*AddShardRequest) Descriptor() ([]byte, []int) {
+	return file_shardmanager_proto_rawDescGZIP(), []int{31}
+}
+
+func (x *AddShardRequest) GetShardId() string {
+	if x != nil {
+		return x.ShardId
+	}
+	return ""
+}
+
+func (x *AddShardRequest) GetRole() string {
+	if x != nil {
+		return x.Role
+	}
+	return ""
+}
+
+type AddShardResponse struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Success       bool                   `protobuf:"varint,1,opt,name=success,proto3" json:"success,omitempty"`
+	Message       string                 `protobuf:"bytes,2,opt,name=message,proto3" json:"message,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *AddShardResponse) Reset() {
+	*x = AddShardResponse{}
+	mi := &file_shardmanager_proto_msgTypes[32]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *AddShardResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*AddShardResponse) ProtoMessage() {}
+
+func (x *AddShardResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_shardmanager_proto_msgTypes[32]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use AddShardResponse.ProtoReflect.Descriptor instead.
+func (*AddShardResponse) Descriptor() ([]byte, []int) {
+	return file_shardmanager_proto_rawDescGZIP(), []int{32}
+}
+
+func (x *AddShardResponse) GetSuccess() bool {
+	if x != nil {
+		return x.Success
+	}
+	return false
+}
+
+func (x *AddShardResponse) GetMessage() string {
+	if x != nil {
+		return x.Message
+	}
+	return ""
+}
+
+type DropShardRequest struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	ShardId       string                 `protobuf:"bytes,1,opt,name=shard_id,json=shardId,proto3" json:"shard_id,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *DropShardRequest) Reset() {
+	*x = DropShardRequest{}
+	mi := &file_shardmanager_proto_msgTypes[33]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *DropShardRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*DropShardRequest) ProtoMessage() {}
+
+func (x *DropShardRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_shardmanager_proto_msgTypes[33]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use DropShardRequest.ProtoReflect.Descriptor instead.
+func (*DropShardRequest) Descriptor() ([]byte, []int) {
+	return file_shardmanager_proto_rawDescGZIP(), []int{33}
+}
+
+func (x *DropShardRequest) GetShardId() string {
+	if x != nil {
+		return x.ShardId
+	}
+	return ""
+}
+
+type DropShardResponse struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Success       bool                   `protobuf:"varint,1,opt,name=success,proto3" json:"success,omitempty"`
+	Message       string                 `protobuf:"bytes,2,opt,name=message,proto3" json:"message,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *DropShardResponse) Reset() {
+	*x = DropShardResponse{}
+	mi := &file_shardmanager_proto_msgTypes[34]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *DropShardResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*DropShardResponse) ProtoMessage() {}
+
+func (x *DropShardResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_shardmanager_proto_msgTypes[34]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use DropShardResponse.ProtoReflect.Descriptor instead.
+func (*DropShardResponse) Descriptor() ([]byte, []int) {
+	return file_shardmanager_proto_rawDescGZIP(), []int{34}
+}
+
+func (x *DropShardResponse) GetSuccess() bool {
+	if x != nil {
+		return x.Success
+	}
+	return false
+}
+
+func (x *DropShardResponse) GetMessage() string {
+	if x != nil {
+		return x.Message
+	}
+	return ""
+}
+
+type ChangeRoleRequest struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	ShardId       string                 `protobuf:"bytes,1,opt,name=shard_id,json=shardId,proto3" json:"shard_id,omitempty"`
+	CurrentRole   string                 `protobuf:"bytes,2,opt,name=current_role,json=currentRole,proto3" json:"current_role,omitempty"`
+	NewRole       string                 `protobuf:"bytes,3,opt,name=new_role,json=newRole,proto3" json:"new_role,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *ChangeRoleRequest) Reset() {
+	*x = ChangeRoleRequest{}
+	mi := &file_shardmanager_proto_msgTypes[35]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *ChangeRoleRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*ChangeRoleRequest) ProtoMessage() {}
+
+func (x *ChangeRoleRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_shardmanager_proto_msgTypes[35]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use ChangeRoleRequest.ProtoReflect.Descriptor instead.
+func (*ChangeRoleRequest) Descriptor() ([]byte, []int) {
+	return file_shardmanager_proto_rawDescGZIP(), []int{35}
+}
+
+func (x *ChangeRoleRequest) GetShardId() string {
+	if x != nil {
+		return x.ShardId
+	}
+	return ""
+}
+
+func (x *ChangeRoleRequest) GetCurrentRole() string {
+	if x != nil {
+		return x.CurrentRole
+	}
+	return ""
+}
+
+func (x *ChangeRoleRequest) GetNewRole() string {
+	if x != nil {
+		return x.NewRole
+	}
+	return ""
+}
+
+type ChangeRoleResponse struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Success       bool                   `protobuf:"varint,1,opt,name=success,proto3" json:"success,omitempty"`
+	Message       string                 `protobuf:"bytes,2,opt,name=message,proto3" json:"message,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *ChangeRoleResponse) Reset() {
+	*x = ChangeRoleResponse{}
+	mi := &file_shardmanager_proto_msgTypes[36]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *ChangeRoleResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*ChangeRoleResponse) ProtoMessage() {}
+
+func (x *ChangeRoleResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_shardmanager_proto_msgTypes[36]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use ChangeRoleResponse.ProtoReflect.Descriptor instead.
+func (*ChangeRoleResponse) Descriptor() ([]byte, []int) {
+	return file_shardmanager_proto_rawDescGZIP(), []int{36}
+}
+
+func (x *ChangeRoleResponse) GetSuccess() bool {
+	if x != nil {
+		return x.Success
+	}
+	return false
+}
+
+func (x *ChangeRoleResponse) GetMessage() string {
+	if x != nil {
+		return x.Message
+	}
+	return ""
+}
+
+type PrepareAddShardRequest struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	ShardId       string                 `protobuf:"bytes,1,opt,name=shard_id,json=shardId,proto3" json:"shard_id,omitempty"`
+	CurrentOwner  string                 `protobuf:"bytes,2,opt,name=current_owner,json=currentOwner,proto3" json:"current_owner,omitempty"`
+	Role          string                 `protobuf:"bytes,3,opt,name=role,proto3" json:"role,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *PrepareAddShardRequest) Reset() {
+	*x = PrepareAddShardRequest{}
+	mi := &file_shardmanager_proto_msgTypes[37]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *PrepareAddShardRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*PrepareAddShardRequest) ProtoMessage() {}
+
+func (x *PrepareAddShardRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_shardmanager_proto_msgTypes[37]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use PrepareAddShardRequest.ProtoReflect.Descriptor instead.
+func (*PrepareAddShardRequest) Descriptor() ([]byte, []int) {
+	return file_shardmanager_proto_rawDescGZIP(), []int{37}
+}
+
+func (x *PrepareAddShardRequest) GetShardId() string {
+	if x != nil {
+		return x.ShardId
+	}
+	return ""
+}
+
+func (x *PrepareAddShardRequest) GetCurrentOwner() string {
+	if x != nil {
+		return x.CurrentOwner
+	}
+	return ""
+}
+
+func (x *PrepareAddShardRequest) GetRole() string {
+	if x != nil {
+		return x.Role
+	}
+	return ""
+}
+
+type PrepareAddShardResponse struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Success       bool                   `protobuf:"varint,1,opt,name=success,proto3" json:"success,omitempty"`
+	Message       string                 `protobuf:"bytes,2,opt,name=message,proto3" json:"message,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *PrepareAddShardResponse) Reset() {
+	*x = PrepareAddShardResponse{}
+	mi := &file_shardmanager_proto_msgTypes[38]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *PrepareAddShardResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*PrepareAddShardResponse) ProtoMessage() {}
+
+func (x *PrepareAddShardResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_shardmanager_proto_msgTypes[38]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use PrepareAddShardResponse.ProtoReflect.Descriptor instead.
+func (*PrepareAddShardResponse) Descriptor() ([]byte, []int) {
+	return file_shardmanager_proto_rawDescGZIP(), []int{38}
+}
+
+func (x *PrepareAddShardResponse) GetSuccess() bool {
+	if x != nil {
+		return x.Success
+	}
+	return false
+}
+
+func (x *PrepareAddShardResponse) GetMessage() string {
+	if x != nil {
+		return x.Message
+	}
+	return ""
+}
+
+type PrepareDropShardRequest struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	ShardId       string                 `protobuf:"bytes,1,opt,name=shard_id,json=shardId,proto3" json:"shard_id,omitempty"`
+	NewOwner      string                 `protobuf:"bytes,2,opt,name=new_owner,json=newOwner,proto3" json:"new_owner,omitempty"`
+	Role          string                 `protobuf:"bytes,3,opt,name=role,proto3" json:"role,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *PrepareDropShardRequest) Reset() {
+	*x = PrepareDropShardRequest{}
+	mi := &file_shardmanager_proto_msgTypes[39]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *PrepareDropShardRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*PrepareDropShardRequest) ProtoMessage() {}
+
+func (x *PrepareDropShardRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_shardmanager_proto_msgTypes[39]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use PrepareDropShardRequest.ProtoReflect.Descriptor instead.
+func (*PrepareDropShardRequest) Descriptor() ([]byte, []int) {
+	return file_shardmanager_proto_rawDescGZIP(), []int{39}
+}
+
+func (x *PrepareDropShardRequest) GetShardId() string {
+	if x != nil {
+		return x.ShardId
+	}
+	return ""
+}
+
+func (x *PrepareDropShardRequest) GetNewOwner() string {
+	if x != nil {
+		return x.NewOwner
+	}
+	return ""
+}
+
+func (x *PrepareDropShardRequest) GetRole() string {
+	if x != nil {
+		return x.Role
+	}
+	return ""
+}
+
+type PrepareDropShardResponse struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Success       bool                   `protobuf:"varint,1,opt,name=success,proto3" json:"success,omitempty"`
+	Message       string                 `protobuf:"bytes,2,opt,name=message,proto3" json:"message,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *PrepareDropShardResponse) Reset() {
+	*x = PrepareDropShardResponse{}
+	mi := &file_shardmanager_proto_msgTypes[40]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *PrepareDropShardResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*PrepareDropShardResponse) ProtoMessage() {}
+
+func (x *PrepareDropShardResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_shardmanager_proto_msgTypes[40]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use PrepareDropShardResponse.ProtoReflect.Descriptor instead.
+func (*PrepareDropShardResponse) Descriptor() ([]byte, []int) {
+	return file_shardmanager_proto_rawDescGZIP(), []int{40}
+}
+
+func (x *PrepareDropShardResponse) GetSuccess() bool {
+	if x != nil {
+		return x.Success
+	}
+	return false
+}
+
+func (x *PrepareDropShardResponse) GetMessage() string {
+	if x != nil {
+		return x.Message
+	}
+	return ""
+}
+
 var File_shardmanager_proto protoreflect.FileDescriptor
 
 const file_shardmanager_proto_rawDesc = "" +
@@ -1649,6 +2186,38 @@ const file_shardmanager_proto_rawDesc = "" +
 	"\adetails\x18\x03 \x01(\tR\adetails\"K\n" +
 	"\x15ReportFailureResponse\x12\x18\n" +
 	"\asuccess\x18\x01 \x01(\bR\asuccess\x12\x18\n" +
+	"\amessage\x18\x02 \x01(\tR\amessage\"@\n" +
+	"\x0fAddShardRequest\x12\x19\n" +
+	"\bshard_id\x18\x01 \x01(\tR\ashardId\x12\x12\n" +
+	"\x04role\x18\x02 \x01(\tR\x04role\"F\n" +
+	"\x10AddShardResponse\x12\x18\n" +
+	"\asuccess\x18\x01 \x01(\bR\asuccess\x12\x18\n" +
+	"\amessage\x18\x02 \x01(\tR\amessage\"-\n" +
+	"\x10DropShardRequest\x12\x19\n" +
+	"\bshard_id\x18\x01 \x01(\tR\ashardId\"G\n" +
+	"\x11DropShardResponse\x12\x18\n" +
+	"\asuccess\x18\x01 \x01(\bR\asuccess\x12\x18\n" +
+	"\amessage\x18\x02 \x01(\tR\amessage\"l\n" +
+	"\x11ChangeRoleRequest\x12\x19\n" +
+	"\bshard_id\x18\x01 \x01(\tR\ashardId\x12!\n" +
+	"\fcurrent_role\x18\x02 \x01(\tR\vcurrentRole\x12\x19\n" +
+	"\bnew_role\x18\x03 \x01(\tR\anewRole\"H\n" +
+	"\x12ChangeRoleResponse\x12\x18\n" +
+	"\asuccess\x18\x01 \x01(\bR\asuccess\x12\x18\n" +
+	"\amessage\x18\x02 \x01(\tR\amessage\"l\n" +
+	"\x16PrepareAddShardRequest\x12\x19\n" +
+	"\bshard_id\x18\x01 \x01(\tR\ashardId\x12#\n" +
+	"\rcurrent_owner\x18\x02 \x01(\tR\fcurrentOwner\x12\x12\n" +
+	"\x04role\x18\x03 \x01(\tR\x04role\"M\n" +
+	"\x17PrepareAddShardResponse\x12\x18\n" +
+	"\asuccess\x18\x01 \x01(\bR\asuccess\x12\x18\n" +
+	"\amessage\x18\x02 \x01(\tR\amessage\"e\n" +
+	"\x17PrepareDropShardRequest\x12\x19\n" +
+	"\bshard_id\x18\x01 \x01(\tR\ashardId\x12\x1b\n" +
+	"\tnew_owner\x18\x02 \x01(\tR\bnewOwner\x12\x12\n" +
+	"\x04role\x18\x03 \x01(\tR\x04role\"N\n" +
+	"\x18PrepareDropShardResponse\x12\x18\n" +
+	"\asuccess\x18\x01 \x01(\bR\asuccess\x12\x18\n" +
 	"\amessage\x18\x02 \x01(\tR\amessage2\x8c\x02\n" +
 	"\vNodeService\x12Y\n" +
 	"\fRegisterNode\x12#.shardmanagerpb.RegisterNodeRequest\x1a$.shardmanagerpb.RegisterNodeResponse\x12P\n" +
@@ -1669,7 +2238,14 @@ const file_shardmanager_proto_rawDesc = "" +
 	"\x0fGetDistribution\x12&.shardmanagerpb.GetDistributionRequest\x1a'.shardmanagerpb.GetDistributionResponse\x12P\n" +
 	"\tGetHealth\x12 .shardmanagerpb.GetHealthRequest\x1a!.shardmanagerpb.GetHealthResponse2n\n" +
 	"\x0eFailureService\x12\\\n" +
-	"\rReportFailure\x12$.shardmanagerpb.ReportFailureRequest\x1a%.shardmanagerpb.ReportFailureResponseB2Z0github.com/seaweedfs/shardmanager/shardmanagerpbb\x06proto3"
+	"\rReportFailure\x12$.shardmanagerpb.ReportFailureRequest\x1a%.shardmanagerpb.ReportFailureResponse2\xd2\x03\n" +
+	"\x0fAppShardService\x12M\n" +
+	"\bAddShard\x12\x1f.shardmanagerpb.AddShardRequest\x1a .shardmanagerpb.AddShardResponse\x12P\n" +
+	"\tDropShard\x12 .shardmanagerpb.DropShardRequest\x1a!.shardmanagerpb.DropShardResponse\x12S\n" +
+	"\n" +
+	"ChangeRole\x12!.shardmanagerpb.ChangeRoleRequest\x1a\".shardmanagerpb.ChangeRoleResponse\x12b\n" +
+	"\x0fPrepareAddShard\x12&.shardmanagerpb.PrepareAddShardRequest\x1a'.shardmanagerpb.PrepareAddShardResponse\x12e\n" +
+	"\x10PrepareDropShard\x12'.shardmanagerpb.PrepareDropShardRequest\x1a(.shardmanagerpb.PrepareDropShardResponseB2Z0github.com/seaweedfs/shardmanager/shardmanagerpbb\x06proto3"
 
 var (
 	file_shardmanager_proto_rawDescOnce sync.Once
@@ -1683,7 +2259,7 @@ func file_shardmanager_proto_rawDescGZIP() []byte {
 	return file_shardmanager_proto_rawDescData
 }
 
-var file_shardmanager_proto_msgTypes = make([]protoimpl.MessageInfo, 32)
+var file_shardmanager_proto_msgTypes = make([]protoimpl.MessageInfo, 42)
 var file_shardmanager_proto_goTypes = []any{
 	(*Node)(nil),                      // 0: shardmanagerpb.Node
 	(*Shard)(nil),                     // 1: shardmanagerpb.Shard
@@ -1716,7 +2292,17 @@ var file_shardmanager_proto_goTypes = []any{
 	(*GetHealthResponse)(nil),         // 28: shardmanagerpb.GetHealthResponse
 	(*ReportFailureRequest)(nil),      // 29: shardmanagerpb.ReportFailureRequest
 	(*ReportFailureResponse)(nil),     // 30: shardmanagerpb.ReportFailureResponse
-	nil,                               // 31: shardmanagerpb.GetDistributionResponse.NodeShardsEntry
+	(*AddShardRequest)(nil),           // 31: shardmanagerpb.AddShardRequest
+	(*AddShardResponse)(nil),          // 32: shardmanagerpb.AddShardResponse
+	(*DropShardRequest)(nil),          // 33: shardmanagerpb.DropShardRequest
+	(*DropShardResponse)(nil),         // 34: shardmanagerpb.DropShardResponse
+	(*ChangeRoleRequest)(nil),         // 35: shardmanagerpb.ChangeRoleRequest
+	(*ChangeRoleResponse)(nil),        // 36: shardmanagerpb.ChangeRoleResponse
+	(*PrepareAddShardRequest)(nil),    // 37: shardmanagerpb.PrepareAddShardRequest
+	(*PrepareAddShardResponse)(nil),   // 38: shardmanagerpb.PrepareAddShardResponse
+	(*PrepareDropShardRequest)(nil),   // 39: shardmanagerpb.PrepareDropShardRequest
+	(*PrepareDropShardResponse)(nil),  // 40: shardmanagerpb.PrepareDropShardResponse
+	nil,                               // 41: shardmanagerpb.GetDistributionResponse.NodeShardsEntry
 }
 var file_shardmanager_proto_depIdxs = []int32{
 	0,  // 0: shardmanagerpb.RegisterNodeRequest.node:type_name -> shardmanagerpb.Node
@@ -1724,7 +2310,7 @@ var file_shardmanager_proto_depIdxs = []int32{
 	1,  // 2: shardmanagerpb.RegisterShardRequest.shard:type_name -> shardmanagerpb.Shard
 	1,  // 3: shardmanagerpb.ListShardsResponse.shards:type_name -> shardmanagerpb.Shard
 	1,  // 4: shardmanagerpb.GetShardInfoResponse.shard:type_name -> shardmanagerpb.Shard
-	31, // 5: shardmanagerpb.GetDistributionResponse.node_shards:type_name -> shardmanagerpb.GetDistributionResponse.NodeShardsEntry
+	41, // 5: shardmanagerpb.GetDistributionResponse.node_shards:type_name -> shardmanagerpb.GetDistributionResponse.NodeShardsEntry
 	26, // 6: shardmanagerpb.GetDistributionResponse.NodeShardsEntry.value:type_name -> shardmanagerpb.ShardList
 	2,  // 7: shardmanagerpb.NodeService.RegisterNode:input_type -> shardmanagerpb.RegisterNodeRequest
 	4,  // 8: shardmanagerpb.NodeService.Heartbeat:input_type -> shardmanagerpb.HeartbeatRequest
@@ -1740,22 +2326,32 @@ var file_shardmanager_proto_depIdxs = []int32{
 	24, // 18: shardmanagerpb.MonitoringService.GetDistribution:input_type -> shardmanagerpb.GetDistributionRequest
 	27, // 19: shardmanagerpb.MonitoringService.GetHealth:input_type -> shardmanagerpb.GetHealthRequest
 	29, // 20: shardmanagerpb.FailureService.ReportFailure:input_type -> shardmanagerpb.ReportFailureRequest
-	3,  // 21: shardmanagerpb.NodeService.RegisterNode:output_type -> shardmanagerpb.RegisterNodeResponse
-	5,  // 22: shardmanagerpb.NodeService.Heartbeat:output_type -> shardmanagerpb.HeartbeatResponse
-	7,  // 23: shardmanagerpb.NodeService.ListNodes:output_type -> shardmanagerpb.ListNodesResponse
-	9,  // 24: shardmanagerpb.ShardService.RegisterShard:output_type -> shardmanagerpb.RegisterShardResponse
-	11, // 25: shardmanagerpb.ShardService.ListShards:output_type -> shardmanagerpb.ListShardsResponse
-	13, // 26: shardmanagerpb.ShardService.GetShardInfo:output_type -> shardmanagerpb.GetShardInfoResponse
-	15, // 27: shardmanagerpb.ShardService.AssignShard:output_type -> shardmanagerpb.AssignShardResponse
-	17, // 28: shardmanagerpb.ShardService.MigrateShard:output_type -> shardmanagerpb.MigrateShardResponse
-	19, // 29: shardmanagerpb.ShardService.UpdateShardStatus:output_type -> shardmanagerpb.UpdateShardStatusResponse
-	21, // 30: shardmanagerpb.PolicyService.SetPolicy:output_type -> shardmanagerpb.SetPolicyResponse
-	23, // 31: shardmanagerpb.PolicyService.GetPolicy:output_type -> shardmanagerpb.GetPolicyResponse
-	25, // 32: shardmanagerpb.MonitoringService.GetDistribution:output_type -> shardmanagerpb.GetDistributionResponse
-	28, // 33: shardmanagerpb.MonitoringService.GetHealth:output_type -> shardmanagerpb.GetHealthResponse
-	30, // 34: shardmanagerpb.FailureService.ReportFailure:output_type -> shardmanagerpb.ReportFailureResponse
-	21, // [21:35] is the sub-list for method output_type
-	7,  // [7:21] is the sub-list for method input_type
+	31, // 21: shardmanagerpb.AppShardService.AddShard:input_type -> shardmanagerpb.AddShardRequest
+	33, // 22: shardmanagerpb.AppShardService.DropShard:input_type -> shardmanagerpb.DropShardRequest
+	35, // 23: shardmanagerpb.AppShardService.ChangeRole:input_type -> shardmanagerpb.ChangeRoleRequest
+	37, // 24: shardmanagerpb.AppShardService.PrepareAddShard:input_type -> shardmanagerpb.PrepareAddShardRequest
+	39, // 25: shardmanagerpb.AppShardService.PrepareDropShard:input_type -> shardmanagerpb.PrepareDropShardRequest
+	3,  // 26: shardmanagerpb.NodeService.RegisterNode:output_type -> shardmanagerpb.RegisterNodeResponse
+	5,  // 27: shardmanagerpb.NodeService.Heartbeat:output_type -> shardmanagerpb.HeartbeatResponse
+	7,  // 28: shardmanagerpb.NodeService.ListNodes:output_type -> shardmanagerpb.ListNodesResponse
+	9,  // 29: shardmanagerpb.ShardService.RegisterShard:output_type -> shardmanagerpb.RegisterShardResponse
+	11, // 30: shardmanagerpb.ShardService.ListShards:output_type -> shardmanagerpb.ListShardsResponse
+	13, // 31: shardmanagerpb.ShardService.GetShardInfo:output_type -> shardmanagerpb.GetShardInfoResponse
+	15, // 32: shardmanagerpb.ShardService.AssignShard:output_type -> shardmanagerpb.AssignShardResponse
+	17, // 33: shardmanagerpb.ShardService.MigrateShard:output_type -> shardmanagerpb.MigrateShardResponse
+	19, // 34: shardmanagerpb.ShardService.UpdateShardStatus:output_type -> shardmanagerpb.UpdateShardStatusResponse
+	21, // 35: shardmanagerpb.PolicyService.SetPolicy:output_type -> shardmanagerpb.SetPolicyResponse
+	23, // 36: shardmanagerpb.PolicyService.GetPolicy:output_type -> shardmanagerpb.GetPolicyResponse
+	25, // 37: shardmanagerpb.MonitoringService.GetDistribution:output_type -> shardmanagerpb.GetDistributionResponse
+	28, // 38: shardmanagerpb.MonitoringService.GetHealth:output_type -> shardmanagerpb.GetHealthResponse
+	30, // 39: shardmanagerpb.FailureService.ReportFailure:output_type -> shardmanagerpb.ReportFailureResponse
+	32, // 40: shardmanagerpb.AppShardService.AddShard:output_type -> shardmanagerpb.AddShardResponse
+	34, // 41: shardmanagerpb.AppShardService.DropShard:output_type -> shardmanagerpb.DropShardResponse
+	36, // 42: shardmanagerpb.AppShardService.ChangeRole:output_type -> shardmanagerpb.ChangeRoleResponse
+	38, // 43: shardmanagerpb.AppShardService.PrepareAddShard:output_type -> shardmanagerpb.PrepareAddShardResponse
+	40, // 44: shardmanagerpb.AppShardService.PrepareDropShard:output_type -> shardmanagerpb.PrepareDropShardResponse
+	26, // [26:45] is the sub-list for method output_type
+	7,  // [7:26] is the sub-list for method input_type
 	7,  // [7:7] is the sub-list for extension type_name
 	7,  // [7:7] is the sub-list for extension extendee
 	0,  // [0:7] is the sub-list for field type_name
@@ -1772,9 +2368,9 @@ func file_shardmanager_proto_init() {
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_shardmanager_proto_rawDesc), len(file_shardmanager_proto_rawDesc)),
 			NumEnums:      0,
-			NumMessages:   32,
+			NumMessages:   42,
 			NumExtensions: 0,
-			NumServices:   5,
+			NumServices:   6,
 		},
 		GoTypes:           file_shardmanager_proto_goTypes,
 		DependencyIndexes: file_shardmanager_proto_depIdxs,

@@ -33,6 +33,15 @@ service FailureService {
   rpc ReportFailure(ReportFailureRequest) returns (ReportFailureResponse);
 }
 
+// Application-server-implemented service, invoked by shardmanager
+service AppShardService {
+  rpc AddShard(AddShardRequest) returns (AddShardResponse);
+  rpc DropShard(DropShardRequest) returns (DropShardResponse);
+  rpc ChangeRole(ChangeRoleRequest) returns (ChangeRoleResponse);
+  rpc PrepareAddShard(PrepareAddShardRequest) returns (PrepareAddShardResponse);
+  rpc PrepareDropShard(PrepareDropShardRequest) returns (PrepareDropShardResponse);
+}
+
 // --- Messages ---
 
 message Node {
@@ -87,4 +96,52 @@ message GetHealthResponse { string summary = 1; }
 
 // FailureService messages
 message ReportFailureRequest { string type = 1; string id = 2; string details = 3; }
-message ReportFailureResponse { bool success = 1; string message = 2; } 
+message ReportFailureResponse { bool success = 1; string message = 2; }
+
+// AppShardService messages
+message AddShardRequest {
+  string shard_id = 1;
+  string role = 2; // "primary" or "secondary"
+}
+message AddShardResponse {
+  bool success = 1;
+  string message = 2;
+}
+
+message DropShardRequest {
+  string shard_id = 1;
+}
+message DropShardResponse {
+  bool success = 1;
+  string message = 2;
+}
+
+message ChangeRoleRequest {
+  string shard_id = 1;
+  string current_role = 2;
+  string new_role = 3;
+}
+message ChangeRoleResponse {
+  bool success = 1;
+  string message = 2;
+}
+
+message PrepareAddShardRequest {
+  string shard_id = 1;
+  string current_owner = 2;
+  string role = 3;
+}
+message PrepareAddShardResponse {
+  bool success = 1;
+  string message = 2;
+}
+
+message PrepareDropShardRequest {
+  string shard_id = 1;
+  string new_owner = 2;
+  string role = 3;
+}
+message PrepareDropShardResponse {
+  bool success = 1;
+  string message = 2;
+} 

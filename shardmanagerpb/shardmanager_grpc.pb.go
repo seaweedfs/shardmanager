@@ -869,3 +869,261 @@ var FailureService_ServiceDesc = grpc.ServiceDesc{
 	Streams:  []grpc.StreamDesc{},
 	Metadata: "shardmanager.proto",
 }
+
+const (
+	AppShardService_AddShard_FullMethodName         = "/shardmanagerpb.AppShardService/AddShard"
+	AppShardService_DropShard_FullMethodName        = "/shardmanagerpb.AppShardService/DropShard"
+	AppShardService_ChangeRole_FullMethodName       = "/shardmanagerpb.AppShardService/ChangeRole"
+	AppShardService_PrepareAddShard_FullMethodName  = "/shardmanagerpb.AppShardService/PrepareAddShard"
+	AppShardService_PrepareDropShard_FullMethodName = "/shardmanagerpb.AppShardService/PrepareDropShard"
+)
+
+// AppShardServiceClient is the client API for AppShardService service.
+//
+// For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
+//
+// Application-server-implemented service, invoked by shardmanager
+type AppShardServiceClient interface {
+	AddShard(ctx context.Context, in *AddShardRequest, opts ...grpc.CallOption) (*AddShardResponse, error)
+	DropShard(ctx context.Context, in *DropShardRequest, opts ...grpc.CallOption) (*DropShardResponse, error)
+	ChangeRole(ctx context.Context, in *ChangeRoleRequest, opts ...grpc.CallOption) (*ChangeRoleResponse, error)
+	PrepareAddShard(ctx context.Context, in *PrepareAddShardRequest, opts ...grpc.CallOption) (*PrepareAddShardResponse, error)
+	PrepareDropShard(ctx context.Context, in *PrepareDropShardRequest, opts ...grpc.CallOption) (*PrepareDropShardResponse, error)
+}
+
+type appShardServiceClient struct {
+	cc grpc.ClientConnInterface
+}
+
+func NewAppShardServiceClient(cc grpc.ClientConnInterface) AppShardServiceClient {
+	return &appShardServiceClient{cc}
+}
+
+func (c *appShardServiceClient) AddShard(ctx context.Context, in *AddShardRequest, opts ...grpc.CallOption) (*AddShardResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(AddShardResponse)
+	err := c.cc.Invoke(ctx, AppShardService_AddShard_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *appShardServiceClient) DropShard(ctx context.Context, in *DropShardRequest, opts ...grpc.CallOption) (*DropShardResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(DropShardResponse)
+	err := c.cc.Invoke(ctx, AppShardService_DropShard_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *appShardServiceClient) ChangeRole(ctx context.Context, in *ChangeRoleRequest, opts ...grpc.CallOption) (*ChangeRoleResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(ChangeRoleResponse)
+	err := c.cc.Invoke(ctx, AppShardService_ChangeRole_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *appShardServiceClient) PrepareAddShard(ctx context.Context, in *PrepareAddShardRequest, opts ...grpc.CallOption) (*PrepareAddShardResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(PrepareAddShardResponse)
+	err := c.cc.Invoke(ctx, AppShardService_PrepareAddShard_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *appShardServiceClient) PrepareDropShard(ctx context.Context, in *PrepareDropShardRequest, opts ...grpc.CallOption) (*PrepareDropShardResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(PrepareDropShardResponse)
+	err := c.cc.Invoke(ctx, AppShardService_PrepareDropShard_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+// AppShardServiceServer is the server API for AppShardService service.
+// All implementations must embed UnimplementedAppShardServiceServer
+// for forward compatibility.
+//
+// Application-server-implemented service, invoked by shardmanager
+type AppShardServiceServer interface {
+	AddShard(context.Context, *AddShardRequest) (*AddShardResponse, error)
+	DropShard(context.Context, *DropShardRequest) (*DropShardResponse, error)
+	ChangeRole(context.Context, *ChangeRoleRequest) (*ChangeRoleResponse, error)
+	PrepareAddShard(context.Context, *PrepareAddShardRequest) (*PrepareAddShardResponse, error)
+	PrepareDropShard(context.Context, *PrepareDropShardRequest) (*PrepareDropShardResponse, error)
+	mustEmbedUnimplementedAppShardServiceServer()
+}
+
+// UnimplementedAppShardServiceServer must be embedded to have
+// forward compatible implementations.
+//
+// NOTE: this should be embedded by value instead of pointer to avoid a nil
+// pointer dereference when methods are called.
+type UnimplementedAppShardServiceServer struct{}
+
+func (UnimplementedAppShardServiceServer) AddShard(context.Context, *AddShardRequest) (*AddShardResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method AddShard not implemented")
+}
+func (UnimplementedAppShardServiceServer) DropShard(context.Context, *DropShardRequest) (*DropShardResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method DropShard not implemented")
+}
+func (UnimplementedAppShardServiceServer) ChangeRole(context.Context, *ChangeRoleRequest) (*ChangeRoleResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method ChangeRole not implemented")
+}
+func (UnimplementedAppShardServiceServer) PrepareAddShard(context.Context, *PrepareAddShardRequest) (*PrepareAddShardResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method PrepareAddShard not implemented")
+}
+func (UnimplementedAppShardServiceServer) PrepareDropShard(context.Context, *PrepareDropShardRequest) (*PrepareDropShardResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method PrepareDropShard not implemented")
+}
+func (UnimplementedAppShardServiceServer) mustEmbedUnimplementedAppShardServiceServer() {}
+func (UnimplementedAppShardServiceServer) testEmbeddedByValue()                         {}
+
+// UnsafeAppShardServiceServer may be embedded to opt out of forward compatibility for this service.
+// Use of this interface is not recommended, as added methods to AppShardServiceServer will
+// result in compilation errors.
+type UnsafeAppShardServiceServer interface {
+	mustEmbedUnimplementedAppShardServiceServer()
+}
+
+func RegisterAppShardServiceServer(s grpc.ServiceRegistrar, srv AppShardServiceServer) {
+	// If the following call pancis, it indicates UnimplementedAppShardServiceServer was
+	// embedded by pointer and is nil.  This will cause panics if an
+	// unimplemented method is ever invoked, so we test this at initialization
+	// time to prevent it from happening at runtime later due to I/O.
+	if t, ok := srv.(interface{ testEmbeddedByValue() }); ok {
+		t.testEmbeddedByValue()
+	}
+	s.RegisterService(&AppShardService_ServiceDesc, srv)
+}
+
+func _AppShardService_AddShard_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(AddShardRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(AppShardServiceServer).AddShard(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: AppShardService_AddShard_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(AppShardServiceServer).AddShard(ctx, req.(*AddShardRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _AppShardService_DropShard_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(DropShardRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(AppShardServiceServer).DropShard(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: AppShardService_DropShard_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(AppShardServiceServer).DropShard(ctx, req.(*DropShardRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _AppShardService_ChangeRole_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(ChangeRoleRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(AppShardServiceServer).ChangeRole(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: AppShardService_ChangeRole_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(AppShardServiceServer).ChangeRole(ctx, req.(*ChangeRoleRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _AppShardService_PrepareAddShard_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(PrepareAddShardRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(AppShardServiceServer).PrepareAddShard(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: AppShardService_PrepareAddShard_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(AppShardServiceServer).PrepareAddShard(ctx, req.(*PrepareAddShardRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _AppShardService_PrepareDropShard_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(PrepareDropShardRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(AppShardServiceServer).PrepareDropShard(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: AppShardService_PrepareDropShard_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(AppShardServiceServer).PrepareDropShard(ctx, req.(*PrepareDropShardRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+// AppShardService_ServiceDesc is the grpc.ServiceDesc for AppShardService service.
+// It's only intended for direct use with grpc.RegisterService,
+// and not to be introspected or modified (even as a copy)
+var AppShardService_ServiceDesc = grpc.ServiceDesc{
+	ServiceName: "shardmanagerpb.AppShardService",
+	HandlerType: (*AppShardServiceServer)(nil),
+	Methods: []grpc.MethodDesc{
+		{
+			MethodName: "AddShard",
+			Handler:    _AppShardService_AddShard_Handler,
+		},
+		{
+			MethodName: "DropShard",
+			Handler:    _AppShardService_DropShard_Handler,
+		},
+		{
+			MethodName: "ChangeRole",
+			Handler:    _AppShardService_ChangeRole_Handler,
+		},
+		{
+			MethodName: "PrepareAddShard",
+			Handler:    _AppShardService_PrepareAddShard_Handler,
+		},
+		{
+			MethodName: "PrepareDropShard",
+			Handler:    _AppShardService_PrepareDropShard_Handler,
+		},
+	},
+	Streams:  []grpc.StreamDesc{},
+	Metadata: "shardmanager.proto",
+}
