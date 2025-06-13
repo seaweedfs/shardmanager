@@ -129,16 +129,16 @@ func (e *Engine) EvaluatePolicies(ctx context.Context, policies []*policy.Policy
 		}
 	}
 
+	var firstErr error
 	for _, p := range sortedPolicies {
-		executed, err := e.EvaluatePolicy(ctx, p)
+		_, err := e.EvaluatePolicy(ctx, p)
 		if err != nil {
-			return fmt.Errorf("failed to evaluate policy %s: %w", p.ID, err)
+			if firstErr == nil {
+				firstErr = fmt.Errorf("failed to evaluate policy %s: %w", p.ID, err)
+			}
 		}
-		if executed {
-			// If a policy was executed, we can stop evaluating lower priority policies
-			break
-		}
+		// No break: evaluate all policies
 	}
 
-	return nil
+	return firstErr
 }

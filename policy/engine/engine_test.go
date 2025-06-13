@@ -2,6 +2,7 @@ package engine
 
 import (
 	"context"
+	"fmt"
 	"testing"
 
 	"github.com/google/uuid"
@@ -36,6 +37,7 @@ func (m *mockMetricProvider) SetMetric(metricName string, value float64) {
 // mockActionExecutor implements ActionExecutor for testing
 type mockActionExecutor struct {
 	executedActions []policy.Action
+	callback        func(ctx context.Context, action policy.Action) error
 }
 
 func newMockActionExecutor() *mockActionExecutor {
@@ -45,12 +47,31 @@ func newMockActionExecutor() *mockActionExecutor {
 }
 
 func (m *mockActionExecutor) ExecuteAction(ctx context.Context, action policy.Action) error {
+	if m.callback != nil {
+		if err := m.callback(ctx, action); err != nil {
+			return err
+		}
+	}
 	m.executedActions = append(m.executedActions, action)
 	return nil
 }
 
 func (m *mockActionExecutor) GetExecutedActions() []policy.Action {
 	return m.executedActions
+}
+
+// ErroringActionExecutor simulates an error on a specific action
+type erroringActionExecutor struct {
+	failOnType string
+	executed   []policy.Action
+}
+
+func (e *erroringActionExecutor) ExecuteAction(ctx context.Context, action policy.Action) error {
+	e.executed = append(e.executed, action)
+	if action.Type == e.failOnType {
+		return fmt.Errorf("simulated error for action: %s", action.Type)
+	}
+	return nil
 }
 
 func TestEngine_EvaluatePolicy(t *testing.T) {
@@ -256,8 +277,141 @@ func TestEngine_EvaluatePolicies_Priority(t *testing.T) {
 	err := engine.EvaluatePolicies(ctx, []*policy.Policy{lowPriorityPolicy, highPriorityPolicy})
 	require.NoError(t, err)
 
-	// Verify only the high priority action was executed
+	// Verify both actions were executed (in priority order)
 	actions := actionExecutor.GetExecutedActions()
-	require.Len(t, actions, 1)
+	require.Len(t, actions, 2)
 	assert.Equal(t, "high_priority_action", actions[0].Type)
+	assert.Equal(t, "low_priority_action", actions[1].Type)
+}
+
+func TestEngine_EvaluatePolicy_MultipleActions(t *testing.T) {
+	metricProvider := newMockMetricProvider()
+	actionExecutor := newMockActionExecutor()
+	engine := NewEngine(metricProvider, actionExecutor)
+	ctx := context.Background()
+
+	metricProvider.SetMetric("cpu_usage", 90.0)
+
+	p := &policy.Policy{
+		ID:          uuid.New(),
+		Version:     "v1",
+		Name:        "multi-action-policy",
+		Description: "Policy with multiple actions",
+		Type:        policy.PolicyTypeLoadBalancing,
+		Priority:    1,
+		Conditions: policy.Conditions{
+			All: []policy.Condition{
+				{
+					Metric:   "cpu_usage",
+					Operator: policy.OperatorGreaterThan,
+					Value:    80.0,
+				},
+			},
+		},
+		Actions: []policy.Action{
+			{Type: "migrate_shard"},
+			{Type: "notify_admin"},
+		},
+	}
+
+	executed, err := engine.EvaluatePolicy(ctx, p)
+	require.NoError(t, err)
+	assert.True(t, executed)
+	actions := actionExecutor.GetExecutedActions()
+	require.Len(t, actions, 2)
+	assert.Equal(t, "migrate_shard", actions[0].Type)
+	assert.Equal(t, "notify_admin", actions[1].Type)
+}
+
+func TestEngine_EvaluatePolicy_ActionError(t *testing.T) {
+	metricProvider := newMockMetricProvider()
+	actionExecutor := &erroringActionExecutor{failOnType: "notify_admin"}
+	engine := NewEngine(metricProvider, actionExecutor)
+	ctx := context.Background()
+
+	metricProvider.SetMetric("cpu_usage", 90.0)
+
+	p := &policy.Policy{
+		ID:          uuid.New(),
+		Version:     "v1",
+		Name:        "error-action-policy",
+		Description: "Policy with erroring action",
+		Type:        policy.PolicyTypeLoadBalancing,
+		Priority:    1,
+		Conditions: policy.Conditions{
+			All: []policy.Condition{{
+				Metric:   "cpu_usage",
+				Operator: policy.OperatorGreaterThan,
+				Value:    80.0,
+			}},
+		},
+		Actions: []policy.Action{
+			{Type: "migrate_shard"},
+			{Type: "notify_admin"},
+		},
+	}
+
+	executed, err := engine.EvaluatePolicy(ctx, p)
+	assert.True(t, executed)
+	assert.Error(t, err)
+	assert.Contains(t, err.Error(), "simulated error for action: notify_admin")
+	assert.Len(t, actionExecutor.executed, 2)
+}
+
+func TestEngine_EvaluatePolicies_ChainedPolicies(t *testing.T) {
+	metricProvider := newMockMetricProvider()
+	actionExecutor := newMockActionExecutor()
+	engine := NewEngine(metricProvider, actionExecutor)
+	ctx := context.Background()
+
+	// Simulate a scenario where the first policy's action triggers a metric change that enables the second policy
+	metricProvider.SetMetric("cpu_usage", 90.0)
+	metricProvider.SetMetric("disk_usage", 50.0)
+
+	firstPolicy := &policy.Policy{
+		ID:          uuid.New(),
+		Version:     "v1",
+		Name:        "first-policy",
+		Description: "First policy",
+		Type:        policy.PolicyTypeLoadBalancing,
+		Priority:    2,
+		Conditions: policy.Conditions{
+			All: []policy.Condition{{
+				Metric:   "cpu_usage",
+				Operator: policy.OperatorGreaterThan,
+				Value:    80.0,
+			}},
+		},
+		Actions: []policy.Action{{Type: "reduce_cpu"}},
+	}
+
+	secondPolicy := &policy.Policy{
+		ID:          uuid.New(),
+		Version:     "v1",
+		Name:        "second-policy",
+		Description: "Second policy",
+		Type:        policy.PolicyTypeLoadBalancing,
+		Priority:    1,
+		Conditions: policy.Conditions{
+			All: []policy.Condition{{
+				Metric:   "disk_usage",
+				Operator: policy.OperatorGreaterThan,
+				Value:    80.0,
+			}},
+		},
+		Actions: []policy.Action{{Type: "cleanup_disk"}},
+	}
+
+	// Simulate chaining: after first policy, update disk_usage to trigger second
+	actionExecutor.callback = func(ctx context.Context, action policy.Action) error {
+		if action.Type == "reduce_cpu" {
+			metricProvider.SetMetric("disk_usage", 85.0)
+		}
+		return nil
+	}
+
+	err := engine.EvaluatePolicies(ctx, []*policy.Policy{firstPolicy, secondPolicy})
+	require.NoError(t, err)
+	actions := actionExecutor.GetExecutedActions()
+	assert.Equal(t, []string{"reduce_cpu", "cleanup_disk"}, []string{actions[0].Type, actions[1].Type})
 }
