@@ -1,9 +1,8 @@
 package server
 
 import (
+	"github.com/seaweedfs/shardmanager/db"
 	"github.com/seaweedfs/shardmanager/shardmanagerpb"
-
-	"github.com/seaweedfs/shardmanager/server/testutil"
 )
 
 type Server struct {
@@ -13,9 +12,9 @@ type Server struct {
 	shardmanagerpb.UnimplementedMonitoringServiceServer
 	shardmanagerpb.UnimplementedFailureServiceServer
 
-	db testutil.DBOperations
+	db db.DBOperations
 }
 
-func NewServer(db testutil.DBOperations) *Server {
+func NewServer(db db.DBOperations) *Server {
 	return &Server{db: db}
 }
