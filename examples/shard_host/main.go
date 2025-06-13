@@ -20,6 +20,7 @@ type ShardHost struct {
 	mu       sync.RWMutex
 	metrics  map[string]float64
 	stopChan chan struct{}
+	port     int
 }
 
 // Shard represents a shard hosted on this node
@@ -30,12 +31,13 @@ type Shard struct {
 }
 
 // NewShardHost creates a new shard host
-func NewShardHost(id string) *ShardHost {
+func NewShardHost(id string, port int) *ShardHost {
 	return &ShardHost{
 		ID:       id,
 		Shards:   make(map[string]*Shard),
 		metrics:  make(map[string]float64),
 		stopChan: make(chan struct{}),
+		port:     port,
 	}
 }
 
@@ -143,35 +145,78 @@ func (h *ShardHost) HandleMigrateShard(action policy.Action) error {
 		return fmt.Errorf("invalid target in migration action")
 	}
 
+	shardID, ok := action.Constraints["shard"].(string)
+	if !ok {
+		return fmt.Errorf("invalid shard in migration action")
+	}
+
 	// If this is the source host, prepare the shard for migration
 	if source == h.ID {
-		// In a real implementation, this would:
-		// 1. Stop accepting writes to the shard
-		// 2. Take a snapshot of the shard
-		// 3. Send the snapshot to the target host
-		// 4. Remove the shard from this host
-		log.Printf("Preparing shard for migration from %s to %s", source, target)
-		return nil
+		_, err := h.GetShard(shardID)
+		if err != nil {
+			return err
+		}
+
+		// In a real implementation, this would send the shard data to the target
+		log.Printf("Migrating shard %s from %s to %s", shardID, source, target)
+
+		// Remove the shard from this host
+		return h.RemoveShard(shardID)
 	}
 
 	// If this is the target host, receive the shard
 	if target == h.ID {
-		// In a real implementation, this would:
-		// 1. Receive the shard data from the source
-		// 2. Start accepting writes to the shard
-		log.Printf("Receiving shard from %s to %s", source, target)
-		return nil
+		// In a real implementation, this would receive the shard data from the source
+		log.Printf("Receiving shard %s from %s to %s", shardID, source, target)
+
+		// Add the shard to this host (with mock data for this example)
+		data := make([]byte, 1024)
+		metadata := map[string]interface{}{
+			"migrated_at": time.Now(),
+			"size":        len(data),
+		}
+		return h.AddShard(shardID, data, metadata)
 	}
 
 	return nil
 }
 
-func main() {
-	// Create a new shard host
-	host := NewShardHost("node1")
-	host.StartMetricsCollection()
+// StartServer starts the HTTP server for this host
+func (h *ShardHost) StartServer() {
+	http.HandleFunc(fmt.Sprintf("/%s/metrics", h.ID), func(w http.ResponseWriter, r *http.Request) {
+		metrics := h.GetMetrics()
+		fmt.Fprintf(w, "Host %s metrics:\n", h.ID)
+		for k, v := range metrics {
+			fmt.Fprintf(w, "%s: %.2f\n", k, v)
+		}
+	})
 
-	// Add some test shards
+	http.HandleFunc(fmt.Sprintf("/%s/shards", h.ID), func(w http.ResponseWriter, r *http.Request) {
+		h.mu.RLock()
+		defer h.mu.RUnlock()
+
+		fmt.Fprintf(w, "Host %s shards:\n", h.ID)
+		for id, shard := range h.Shards {
+			fmt.Fprintf(w, "Shard %s: %d bytes\n", id, len(shard.Data))
+		}
+	})
+
+	go func() {
+		addr := fmt.Sprintf(":%d", h.port)
+		log.Printf("Starting server for %s on %s", h.ID, addr)
+		if err := http.ListenAndServe(addr, nil); err != nil {
+			log.Fatalf("Failed to start server for %s: %v", h.ID, err)
+		}
+	}()
+}
+
+func main() {
+	// Create the first shard host
+	host1 := NewShardHost("node1", 8080)
+	host1.StartMetricsCollection()
+	host1.StartServer()
+
+	// Add some test shards to the first host
 	for i := 0; i < 3; i++ {
 		shardID := fmt.Sprintf("shard-%d", i)
 		data := make([]byte, 1024) // 1KB of test data
@@ -179,39 +224,12 @@ func main() {
 			"created_at": time.Now(),
 			"size":       len(data),
 		}
-		if err := host.AddShard(shardID, data, metadata); err != nil {
+		if err := host1.AddShard(shardID, data, metadata); err != nil {
 			log.Fatalf("Failed to add shard: %v", err)
 		}
 	}
 
-	// Start an HTTP server to expose metrics and handle actions
-	http.HandleFunc("/metrics", func(w http.ResponseWriter, r *http.Request) {
-		metrics := host.GetMetrics()
-		fmt.Fprintf(w, "Host %s metrics:\n", host.ID)
-		for k, v := range metrics {
-			fmt.Fprintf(w, "%s: %.2f\n", k, v)
-		}
-	})
-
-	http.HandleFunc("/shards", func(w http.ResponseWriter, r *http.Request) {
-		host.mu.RLock()
-		defer host.mu.RUnlock()
-
-		fmt.Fprintf(w, "Host %s shards:\n", host.ID)
-		for id, shard := range host.Shards {
-			fmt.Fprintf(w, "Shard %s: %d bytes\n", id, len(shard.Data))
-		}
-	})
-
-	// Start the server
-	go func() {
-		log.Printf("Starting server on :8080")
-		if err := http.ListenAndServe(":8080", nil); err != nil {
-			log.Fatalf("Failed to start server: %v", err)
-		}
-	}()
-
-	// Print metrics periodically
+	// Print metrics periodically for host1
 	go func() {
 		ticker := time.NewTicker(5 * time.Second)
 		defer ticker.Stop()
@@ -219,15 +237,61 @@ func main() {
 		for {
 			select {
 			case <-ticker.C:
-				metrics := host.GetMetrics()
-				log.Printf("Current metrics: CPU=%.1f%%, Memory=%.1f%%",
+				metrics := host1.GetMetrics()
+				log.Printf("Host1 metrics: CPU=%.1f%%, Memory=%.1f%%",
 					metrics["cpu_usage"],
 					metrics["memory_usage"])
-			case <-host.stopChan:
+			case <-host1.stopChan:
 				return
 			}
 		}
 	}()
+
+	// Start the second host after a delay
+	time.Sleep(10 * time.Second)
+	log.Println("Starting second host...")
+	host2 := NewShardHost("node2", 8081)
+	host2.StartMetricsCollection()
+	host2.StartServer()
+
+	// Print metrics periodically for host2
+	go func() {
+		ticker := time.NewTicker(5 * time.Second)
+		defer ticker.Stop()
+
+		for {
+			select {
+			case <-ticker.C:
+				metrics := host2.GetMetrics()
+				log.Printf("Host2 metrics: CPU=%.1f%%, Memory=%.1f%%",
+					metrics["cpu_usage"],
+					metrics["memory_usage"])
+			case <-host2.stopChan:
+				return
+			}
+		}
+	}()
+
+	// Simulate load balancing after a delay
+	time.Sleep(5 * time.Second)
+	log.Println("Starting load balancing...")
+
+	// Migrate one shard from host1 to host2
+	action := policy.Action{
+		Type: "migrate_shard",
+		Constraints: map[string]interface{}{
+			"source": "node1",
+			"target": "node2",
+			"shard":  "shard-0",
+		},
+	}
+
+	if err := host1.HandleMigrateShard(action); err != nil {
+		log.Printf("Failed to migrate shard from host1: %v", err)
+	}
+	if err := host2.HandleMigrateShard(action); err != nil {
+		log.Printf("Failed to migrate shard to host2: %v", err)
+	}
 
 	// Wait for interrupt signal
 	sigChan := make(chan os.Signal, 1)
@@ -235,6 +299,7 @@ func main() {
 	<-sigChan
 
 	// Cleanup
-	close(host.stopChan)
-	log.Println("Shard host stopped")
+	close(host1.stopChan)
+	close(host2.stopChan)
+	log.Println("Shard hosts stopped")
 }
