@@ -8,6 +8,7 @@ import (
 	"github.com/google/uuid"
 	"github.com/seaweedfs/shardmanager/shardmanagerpb"
 
+	"github.com/seaweedfs/shardmanager/db"
 	"github.com/seaweedfs/shardmanager/server/testutil"
 )
 
@@ -17,6 +18,15 @@ func TestShardServiceOperations(t *testing.T) {
 
 	const testShardID = "11111111-1111-1111-1111-111111111111"
 	const testNodeID = "22222222-2222-2222-2222-222222222222" // Node ID must also be a valid UUID
+
+	// Register a node before registering a shard
+	nodeUUID, _ := uuid.Parse(testNodeID)
+	mockDB.RegisterNode(context.Background(), &db.Node{
+		ID:       nodeUUID,
+		Location: "localhost:1234",
+		Capacity: 100,
+		Status:   "active",
+	})
 
 	t.Run("RegisterShard", func(t *testing.T) {
 		req := &shardmanagerpb.RegisterShardRequest{

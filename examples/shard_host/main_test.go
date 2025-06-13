@@ -10,11 +10,13 @@ import (
 )
 
 func TestShardHost(t *testing.T) {
-	// Create a new shard host
-	host := NewShardHost("node1")
-	host.StartMetricsCollection()
+	// Create two shard hosts
+	host1 := NewShardHost("node1", 8080)
+	host2 := NewShardHost("node2", 8081)
+	host1.StartMetricsCollection()
+	host2.StartMetricsCollection()
 
-	// Test adding a shard
+	// Test adding a shard to host1
 	shardID := "test-shard"
 	data := []byte("test data")
 	metadata := map[string]interface{}{
@@ -22,11 +24,11 @@ func TestShardHost(t *testing.T) {
 		"size":       len(data),
 	}
 
-	err := host.AddShard(shardID, data, metadata)
+	err := host1.AddShard(shardID, data, metadata)
 	require.NoError(t, err)
 
-	// Test getting the shard
-	shard, err := host.GetShard(shardID)
+	// Test getting the shard from host1
+	shard, err := host1.GetShard(shardID)
 	require.NoError(t, err)
 	assert.Equal(t, shardID, shard.ID)
 	assert.Equal(t, data, shard.Data)
@@ -35,30 +37,32 @@ func TestShardHost(t *testing.T) {
 	// Wait for metrics to be updated
 	time.Sleep(1200 * time.Millisecond)
 
-	// Test metrics
-	metrics := host.GetMetrics()
+	// Test metrics for host1
+	metrics := host1.GetMetrics()
 	assert.Greater(t, metrics["cpu_usage"], 0.0)
 	assert.Greater(t, metrics["memory_usage"], 0.0)
 
-	// Test removing the shard
-	err = host.RemoveShard(shardID)
-	require.NoError(t, err)
-
-	// Test getting a non-existent shard
-	_, err = host.GetShard(shardID)
-	assert.Error(t, err)
-
-	// Test handling migration action
+	// Test handling migration action from host1 to host2
 	action := policy.Action{
 		Type: "migrate_shard",
 		Constraints: map[string]interface{}{
 			"source": "node1",
 			"target": "node2",
+			"shard":  shardID,
 		},
 	}
-
-	err = host.HandleMigrateShard(action)
+	// First, call HandleMigrateShard on host1 to remove the shard
+	err = host1.HandleMigrateShard(action)
 	require.NoError(t, err)
+
+	// Then, call HandleMigrateShard on host2 to add the shard
+	err = host2.HandleMigrateShard(action)
+	require.NoError(t, err)
+
+	// Verify the shard is now on host2
+	shard, err = host2.GetShard(shardID)
+	require.NoError(t, err)
+	assert.Equal(t, shardID, shard.ID)
 
 	// Test handling invalid migration action
 	invalidAction := policy.Action{
@@ -68,10 +72,18 @@ func TestShardHost(t *testing.T) {
 			// Missing target
 		},
 	}
+	err = host1.HandleMigrateShard(invalidAction)
+	assert.Error(t, err)
 
-	err = host.HandleMigrateShard(invalidAction)
+	// Test removing the shard from host2
+	err = host2.RemoveShard(shardID)
+	require.NoError(t, err)
+
+	// Test getting a non-existent shard from host2
+	_, err = host2.GetShard(shardID)
 	assert.Error(t, err)
 
 	// Cleanup
-	close(host.stopChan)
+	close(host1.stopChan)
+	close(host2.stopChan)
 }

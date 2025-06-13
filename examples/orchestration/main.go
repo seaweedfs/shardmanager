@@ -25,7 +25,7 @@ type MigrationRequest struct {
 }
 
 func fetchMetrics(host HostInfo) (map[string]float64, error) {
-	resp, err := http.Get(host.Addr + "/" + host.ID + "/metrics")
+	resp, err := http.Get(host.Addr + "/metrics")
 	if err != nil {
 		return nil, err
 	}
@@ -48,15 +48,13 @@ func fetchMetrics(host HostInfo) (map[string]float64, error) {
 		if err != nil {
 			continue
 		}
-		fmt.Printf("DEBUG: parsed metric: %s = %f\n", k, v)
 		metrics[k] = v
 	}
-	fmt.Printf("DEBUG: metrics map: %+v\n", metrics)
 	return metrics, nil
 }
 
 func fetchShards(host HostInfo) ([]string, error) {
-	resp, err := http.Get(host.Addr + "/" + host.ID + "/shards")
+	resp, err := http.Get(host.Addr + "/shards")
 	if err != nil {
 		return nil, err
 	}

@@ -27,6 +27,7 @@ type DBOperations interface {
 	ListShardVersions(ctx context.Context, shardID uuid.UUID) ([]*db.ShardVersion, error)
 	UpdateShardVersion(ctx context.Context, shard *db.Shard) error
 	RollbackShardVersion(ctx context.Context, shardID uuid.UUID, version int) error
+	GetNodeInfo(ctx context.Context, nodeID uuid.UUID) (*db.Node, error)
 }
 
 // MockDB implements DBOperations for testing
@@ -167,4 +168,13 @@ func (m *MockDB) UpdateShardVersion(ctx context.Context, shard *db.Shard) error 
 // RollbackShardVersion mocks the RollbackShardVersion operation
 func (m *MockDB) RollbackShardVersion(ctx context.Context, shardID uuid.UUID, version int) error {
 	return nil
+}
+
+// GetNodeInfo mocks the GetNodeInfo operation
+func (m *MockDB) GetNodeInfo(ctx context.Context, nodeID uuid.UUID) (*db.Node, error) {
+	node, ok := m.nodes[nodeID]
+	if !ok {
+		return nil, nil
+	}
+	return node, nil
 }
