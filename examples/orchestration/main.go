@@ -25,7 +25,7 @@ type MigrationRequest struct {
 }
 
 func fetchMetrics(host HostInfo) (map[string]float64, error) {
-	resp, err := http.Get(host.Addr + "/metrics")
+	resp, err := http.Get(host.Addr + "/" + host.ID + "/metrics")
 	if err != nil {
 		return nil, err
 	}
@@ -56,7 +56,7 @@ func fetchMetrics(host HostInfo) (map[string]float64, error) {
 }
 
 func fetchShards(host HostInfo) ([]string, error) {
-	resp, err := http.Get(host.Addr + "/shards")
+	resp, err := http.Get(host.Addr + "/" + host.ID + "/shards")
 	if err != nil {
 		return nil, err
 	}
@@ -64,10 +64,16 @@ func fetchShards(host HostInfo) ([]string, error) {
 	body, _ := ioutil.ReadAll(resp.Body)
 	var shards []string
 	for _, line := range bytes.Split(body, []byte("\n")) {
-		var id string
-		if n, _ := fmt.Sscanf(string(line), "Shard %s:", &id); n == 1 {
-			shards = append(shards, id)
+		lineStr := strings.TrimSpace(string(line))
+		if lineStr == "" {
+			continue
 		}
+		parts := strings.SplitN(lineStr, ":", 2)
+		if len(parts) != 2 {
+			continue
+		}
+		shardID := strings.TrimSpace(strings.TrimPrefix(parts[0], "Shard "))
+		shards = append(shards, shardID)
 	}
 	return shards, nil
 }
@@ -88,6 +94,31 @@ func triggerMigration(source, target HostInfo, shardID string) error {
 var logPrintf = fmt.Printf
 
 func main() {
+	// Start the metrics server for node1
+	go func() {
+		http.HandleFunc("/node1/metrics", func(w http.ResponseWriter, r *http.Request) {
+			fmt.Fprintf(w, "cpu_usage: 50.0\nmemory_usage: 33.0\n")
+		})
+		http.HandleFunc("/node1/shards", func(w http.ResponseWriter, r *http.Request) {
+			fmt.Fprintf(w, "Shard 1: active\nShard 2: active\n")
+		})
+		log.Fatal(http.ListenAndServe(":8080", nil))
+	}()
+
+	// Start the metrics server for node2
+	go func() {
+		http.HandleFunc("/node2/metrics", func(w http.ResponseWriter, r *http.Request) {
+			fmt.Fprintf(w, "cpu_usage: 20.0\nmemory_usage: 25.0\n")
+		})
+		http.HandleFunc("/node2/shards", func(w http.ResponseWriter, r *http.Request) {
+			fmt.Fprintf(w, "Shard 3: active\n")
+		})
+		log.Fatal(http.ListenAndServe(":8081", nil))
+	}()
+
+	// Wait for the servers to start
+	time.Sleep(1 * time.Second)
+
 	hosts := []HostInfo{
 		{ID: "node1", Addr: "http://localhost:8080"},
 		{ID: "node2", Addr: "http://localhost:8081"},
@@ -136,4 +167,8 @@ func main() {
 	} else {
 		log.Printf("No migration needed. CPU usage on %s is %.2f", source.ID, metrics["cpu_usage"])
 	}
+
+	// Simulate some orchestration logic
+	time.Sleep(10 * time.Second)
+	fmt.Println("Orchestration example completed.")
 }
