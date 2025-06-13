@@ -5,8 +5,12 @@ import (
 
 	"github.com/seaweedfs/shardmanager/shardmanagerpb"
 
+	"log"
+	"time"
+
 	"github.com/google/uuid"
 	"github.com/seaweedfs/shardmanager/db"
+	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 )
@@ -25,7 +29,45 @@ func (s *Server) RegisterShard(ctx context.Context, req *shardmanagerpb.Register
 		Status: req.Shard.Status,
 	}
 
-	if req.Shard.NodeId != "" {
+	// If no node is specified, find an available node
+	if req.Shard.NodeId == "" {
+		nodes, err := s.db.ListNodes(ctx)
+		if err != nil {
+			return nil, status.Error(codes.Internal, err.Error())
+		}
+		if len(nodes) == 0 {
+			return nil, status.Error(codes.FailedPrecondition, "no nodes available for shard assignment")
+		}
+
+		// Simple round-robin: find the node with the least number of shards
+		var selectedNode *db.Node
+		minShards := -1
+		for _, node := range nodes {
+			if node.Status != "active" {
+				continue
+			}
+			shards, err := s.db.ListShards(ctx)
+			if err != nil {
+				return nil, status.Error(codes.Internal, err.Error())
+			}
+			nodeShardCount := 0
+			for _, shard := range shards {
+				if shard.NodeID != nil && *shard.NodeID == node.ID {
+					nodeShardCount++
+				}
+			}
+			if minShards == -1 || nodeShardCount < minShards {
+				minShards = nodeShardCount
+				selectedNode = node
+			}
+		}
+
+		if selectedNode == nil {
+			return nil, status.Error(codes.FailedPrecondition, "no active nodes available for shard assignment")
+		}
+
+		shard.NodeID = &selectedNode.ID
+	} else {
 		nodeID, err := uuid.Parse(req.Shard.NodeId)
 		if err != nil {
 			return nil, status.Error(codes.InvalidArgument, "invalid node ID")
@@ -35,6 +77,11 @@ func (s *Server) RegisterShard(ctx context.Context, req *shardmanagerpb.Register
 
 	if err := s.db.RegisterShard(ctx, shard); err != nil {
 		return nil, status.Error(codes.Internal, err.Error())
+	}
+
+	// Notify appserver if assigned
+	if shard.NodeID != nil {
+		go s.notifyAppServerAddShard(context.Background(), *shard.NodeID, shard.ID, "primary")
 	}
 
 	return &shardmanagerpb.RegisterShardResponse{
@@ -108,6 +155,9 @@ func (s *Server) AssignShard(ctx context.Context, req *shardmanagerpb.AssignShar
 		return nil, status.Error(codes.Internal, err.Error())
 	}
 
+	// Notify appserver
+	go s.notifyAppServerAddShard(context.Background(), nodeID, shardID, "primary")
+
 	return &shardmanagerpb.AssignShardResponse{
 		Success: true,
 		Message: "Shard assigned successfully",
@@ -179,4 +229,29 @@ func (s *Server) UpdateShardStatus(ctx context.Context, req *shardmanagerpb.Upda
 		Success: true,
 		Message: "Shard status updated successfully",
 	}, nil
+}
+
+// notifyAppServerAddShard contacts the appserver and calls AddShard RPC
+func (s *Server) notifyAppServerAddShard(ctx context.Context, nodeID uuid.UUID, shardID uuid.UUID, role string) {
+	node, err := s.db.GetNodeInfo(ctx, nodeID)
+	if err != nil || node == nil {
+		log.Printf("[WARN] Could not find node %s for AddShard notification: %v", nodeID, err)
+		return
+	}
+	conn, err := grpc.Dial(node.Location, grpc.WithInsecure(), grpc.WithBlock(), grpc.WithTimeout(2*time.Second))
+	if err != nil {
+		log.Printf("[WARN] Could not connect to appserver at %s: %v", node.Location, err)
+		return
+	}
+	defer conn.Close()
+	client := shardmanagerpb.NewAppShardServiceClient(conn)
+	ctx, cancel := context.WithTimeout(ctx, 2*time.Second)
+	defer cancel()
+	_, err = client.AddShard(ctx, &shardmanagerpb.AddShardRequest{
+		ShardId: shardID.String(),
+		Role:    role,
+	})
+	if err != nil {
+		log.Printf("[WARN] AddShard RPC to appserver %s failed: %v", node.Location, err)
+	}
 }

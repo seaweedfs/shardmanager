@@ -3,6 +3,7 @@ package db
 import (
 	"context"
 	"database/sql"
+	"encoding/json"
 	"time"
 
 	"github.com/google/uuid"
@@ -34,13 +35,26 @@ func (db *DB) ListShards(ctx context.Context) ([]*Shard, error) {
 	var shards []*Shard
 	for rows.Next() {
 		shard := &Shard{}
+		var metadata sql.NullString
+		var nodeID sql.NullString
 		err := rows.Scan(
-			&shard.ID, &shard.Type, &shard.Size, &shard.NodeID,
-			&shard.Status, &shard.Version, &shard.Metadata,
+			&shard.ID, &shard.Type, &shard.Size, &nodeID,
+			&shard.Status, &shard.Version, &metadata,
 			&shard.CreatedAt, &shard.UpdatedAt,
 		)
 		if err != nil {
 			return nil, err
+		}
+		if nodeID.Valid {
+			parsedID, err := uuid.Parse(nodeID.String)
+			if err == nil {
+				shard.NodeID = &parsedID
+			}
+		}
+		if metadata.Valid {
+			shard.Metadata = json.RawMessage(metadata.String)
+		} else {
+			shard.Metadata = json.RawMessage("{}")
 		}
 		shards = append(shards, shard)
 	}
@@ -54,9 +68,11 @@ func (db *DB) GetShardInfo(ctx context.Context, shardID uuid.UUID) (*Shard, erro
 		WHERE id = $1`
 
 	shard := &Shard{}
+	var metadata sql.NullString
+	var nodeID sql.NullString
 	err := db.QueryRowContext(ctx, query, shardID).Scan(
-		&shard.ID, &shard.Type, &shard.Size, &shard.NodeID,
-		&shard.Status, &shard.Version, &shard.Metadata,
+		&shard.ID, &shard.Type, &shard.Size, &nodeID,
+		&shard.Status, &shard.Version, &metadata,
 		&shard.CreatedAt, &shard.UpdatedAt,
 	)
 	if err == sql.ErrNoRows {
@@ -64,6 +80,17 @@ func (db *DB) GetShardInfo(ctx context.Context, shardID uuid.UUID) (*Shard, erro
 	}
 	if err != nil {
 		return nil, err
+	}
+	if nodeID.Valid {
+		parsedID, err := uuid.Parse(nodeID.String)
+		if err == nil {
+			shard.NodeID = &parsedID
+		}
+	}
+	if metadata.Valid {
+		shard.Metadata = json.RawMessage(metadata.String)
+	} else {
+		shard.Metadata = json.RawMessage("{}")
 	}
 	return shard, nil
 }

@@ -148,3 +148,29 @@ func (db *DB) ListNodes(ctx context.Context) ([]*Node, error) {
 	}
 	return nodes, rows.Err()
 }
+
+func (db *DB) GetNodeInfo(ctx context.Context, nodeID uuid.UUID) (*Node, error) {
+	query := `
+		SELECT id, location, capacity, status, last_heartbeat, current_load, created_at, updated_at
+		FROM nodes
+		WHERE id = $1`
+	node := &Node{}
+	var lastHeartbeat sql.NullTime
+	err := db.QueryRowContext(ctx, query, nodeID).Scan(
+		&node.ID,
+		&node.Location,
+		&node.Capacity,
+		&node.Status,
+		&lastHeartbeat,
+		&node.CurrentLoad,
+		&node.CreatedAt,
+		&node.UpdatedAt,
+	)
+	if err != nil {
+		return nil, err
+	}
+	if lastHeartbeat.Valid {
+		node.LastHeartbeat = lastHeartbeat.Time
+	}
+	return node, nil
+}
