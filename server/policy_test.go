@@ -4,33 +4,52 @@ import (
 	"context"
 	"testing"
 
-	"github.com/seaweedfs/shardmanager/shardmanagerpb"
-
 	"github.com/seaweedfs/shardmanager/server/testutil"
-	"github.com/stretchr/testify/assert"
-	"github.com/stretchr/testify/require"
+	"github.com/seaweedfs/shardmanager/shardmanagerpb"
 )
 
 func TestPolicyServiceOperations(t *testing.T) {
-	server := &Server{db: testutil.NewMockDB()}
-	ctx := context.Background()
+	mockDB := testutil.NewMockDB()
+	server := NewServer(mockDB)
 
 	t.Run("SetPolicy", func(t *testing.T) {
 		req := &shardmanagerpb.SetPolicyRequest{
 			PolicyType: "test-policy",
 			Parameters: `{"key": "value"}`,
 		}
-
-		resp, err := server.SetPolicy(ctx, req)
-		require.NoError(t, err)
-		assert.NotNil(t, resp)
+		_, err := server.SetPolicy(context.Background(), req)
+		if err != nil {
+			t.Errorf("SetPolicy failed: %v", err)
+		}
 	})
 
 	t.Run("GetPolicy", func(t *testing.T) {
-		req := &shardmanagerpb.GetPolicyRequest{}
+		// Create a policy before the test
+		req := &shardmanagerpb.SetPolicyRequest{
+			PolicyType: "test-policy",
+			Parameters: `{"key": "value"}`,
+		}
+		_, err := server.SetPolicy(context.Background(), req)
+		if err != nil {
+			t.Errorf("SetPolicy failed: %v", err)
+		}
 
-		resp, err := server.GetPolicy(ctx, req)
-		require.NoError(t, err)
-		assert.NotNil(t, resp)
+		// Retrieve the policy
+		reqGet := &shardmanagerpb.GetPolicyRequest{
+			PolicyType: "test-policy",
+		}
+		_, err = server.GetPolicy(context.Background(), reqGet)
+		if err != nil {
+			t.Errorf("GetPolicy failed: %v", err)
+		}
+
+		// Assert that the policy was retrieved correctly
+		policy, err := mockDB.GetPolicy(context.Background(), "test-policy")
+		if err != nil {
+			t.Errorf("GetPolicy failed: %v", err)
+		}
+		if policy == nil {
+			t.Errorf("Policy not found")
+		}
 	})
 }

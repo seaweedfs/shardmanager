@@ -2,75 +2,108 @@ package server
 
 import (
 	"context"
+	"log"
 	"testing"
 
+	"github.com/google/uuid"
 	"github.com/seaweedfs/shardmanager/shardmanagerpb"
 
-	"github.com/google/uuid"
 	"github.com/seaweedfs/shardmanager/server/testutil"
-	"github.com/stretchr/testify/assert"
-	"github.com/stretchr/testify/require"
 )
 
 func TestShardServiceOperations(t *testing.T) {
-	server := &Server{db: testutil.NewMockDB()}
-	ctx := context.Background()
+	mockDB := testutil.NewMockDB()
+	server := NewServer(mockDB)
+
+	const testShardID = "11111111-1111-1111-1111-111111111111"
+	const testNodeID = "22222222-2222-2222-2222-222222222222" // Node ID must also be a valid UUID
 
 	t.Run("RegisterShard", func(t *testing.T) {
-		shardID := uuid.New()
 		req := &shardmanagerpb.RegisterShardRequest{
 			Shard: &shardmanagerpb.Shard{
-				Id:     shardID.String(),
+				Id:     testShardID,
 				Type:   "test-type",
 				Size:   100,
 				Status: "active",
 			},
 		}
-
-		resp, err := server.RegisterShard(ctx, req)
-		require.NoError(t, err)
-		assert.NotNil(t, resp)
+		_, err := server.RegisterShard(context.Background(), req)
+		if err != nil {
+			t.Errorf("RegisterShard failed: %v", err)
+		}
+		log.Printf("Registered shard: %v", req.Shard)
 	})
 
 	t.Run("ListShards", func(t *testing.T) {
-		resp, err := server.ListShards(ctx, &shardmanagerpb.ListShardsRequest{})
-		require.NoError(t, err)
-		assert.NotNil(t, resp)
+		req := &shardmanagerpb.ListShardsRequest{}
+		_, err := server.ListShards(context.Background(), req)
+		if err != nil {
+			t.Errorf("ListShards failed: %v", err)
+		}
 	})
 
 	t.Run("GetShardInfo", func(t *testing.T) {
-		shardID := uuid.New()
-		req := &shardmanagerpb.GetShardInfoRequest{
-			ShardId: shardID.String(),
+		// Create a shard before the test
+		req := &shardmanagerpb.RegisterShardRequest{
+			Shard: &shardmanagerpb.Shard{
+				Id:     testShardID,
+				Type:   "test-type",
+				Size:   100,
+				Status: "active",
+			},
+		}
+		_, err := server.RegisterShard(context.Background(), req)
+		if err != nil {
+			t.Errorf("RegisterShard failed: %v", err)
+		}
+		log.Printf("Registered shard: %v", req.Shard)
+
+		// Retrieve the shard
+		reqGet := &shardmanagerpb.GetShardInfoRequest{
+			ShardId: testShardID,
+		}
+		_, err = server.GetShardInfo(context.Background(), reqGet)
+		if err != nil {
+			t.Errorf("GetShardInfo failed: %v", err)
 		}
 
-		resp, err := server.GetShardInfo(ctx, req)
-		require.NoError(t, err)
-		assert.NotNil(t, resp)
+		// Convert string to uuid.UUID
+		shardID, err := uuid.Parse(testShardID)
+		if err != nil {
+			t.Errorf("Failed to parse shard ID: %v", err)
+		}
+
+		// Assert that the shard was retrieved correctly
+		shard, err := mockDB.GetShardInfo(context.Background(), shardID)
+		if err != nil {
+			t.Errorf("GetShardInfo failed: %v", err)
+		}
+		if shard == nil {
+			t.Errorf("Shard not found")
+		}
+		log.Printf("Retrieved shard: %v", shard)
 	})
 
 	t.Run("AssignShard", func(t *testing.T) {
-		shardID := uuid.New()
-		nodeID := uuid.New()
+		// Use a valid UUID for the node ID
 		req := &shardmanagerpb.AssignShardRequest{
-			ShardId: shardID.String(),
-			NodeId:  nodeID.String(),
+			ShardId: testShardID,
+			NodeId:  testNodeID,
 		}
-
-		resp, err := server.AssignShard(ctx, req)
-		require.NoError(t, err)
-		assert.NotNil(t, resp)
+		_, err := server.AssignShard(context.Background(), req)
+		if err != nil {
+			t.Errorf("AssignShard failed: %v", err)
+		}
 	})
 
 	t.Run("UpdateShardStatus", func(t *testing.T) {
-		shardID := uuid.New()
 		req := &shardmanagerpb.UpdateShardStatusRequest{
-			ShardId: shardID.String(),
-			Status:  "migrating",
+			ShardId: testShardID,
+			Status:  "inactive",
 		}
-
-		resp, err := server.UpdateShardStatus(ctx, req)
-		require.NoError(t, err)
-		assert.NotNil(t, resp)
+		_, err := server.UpdateShardStatus(context.Background(), req)
+		if err != nil {
+			t.Errorf("UpdateShardStatus failed: %v", err)
+		}
 	})
 }

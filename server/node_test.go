@@ -19,6 +19,7 @@ func TestNodeService(t *testing.T) {
 	server := &Server{db: mockDB}
 
 	t.Run("RegisterNode", func(t *testing.T) {
+		mockDB.Reset()
 		nodeID := uuid.New()
 		req := &shardmanagerpb.RegisterNodeRequest{
 			Node: &shardmanagerpb.Node{
@@ -36,6 +37,7 @@ func TestNodeService(t *testing.T) {
 	})
 
 	t.Run("Heartbeat", func(t *testing.T) {
+		mockDB.Reset()
 		nodeID := uuid.New()
 		req := &shardmanagerpb.HeartbeatRequest{
 			NodeId: nodeID.String(),
@@ -50,6 +52,7 @@ func TestNodeService(t *testing.T) {
 	})
 
 	t.Run("ListNodes", func(t *testing.T) {
+		mockDB.Reset()
 		// Register a test node first
 		nodeID := uuid.New()
 		node := &db.Node{

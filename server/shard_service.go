@@ -13,8 +13,13 @@ import (
 
 // ShardService implementation
 func (s *Server) RegisterShard(ctx context.Context, req *shardmanagerpb.RegisterShardRequest) (*shardmanagerpb.RegisterShardResponse, error) {
+	// Use the provided shard ID as a UUID
+	shardID, err := uuid.Parse(req.Shard.Id)
+	if err != nil {
+		return nil, status.Error(codes.InvalidArgument, "invalid shard ID")
+	}
 	shard := &db.Shard{
-		ID:     uuid.New(),
+		ID:     shardID,
 		Type:   req.Shard.Type,
 		Size:   req.Shard.Size,
 		Status: req.Shard.Status,
