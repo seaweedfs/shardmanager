@@ -142,3 +142,36 @@ func (e *Engine) EvaluatePolicies(ctx context.Context, policies []*policy.Policy
 
 	return firstErr
 }
+
+// RealMetricProvider simulates a real system metric provider
+// Exported for use in tests and other packages
+type RealMetricProvider struct {
+	Metrics map[string]float64
+}
+
+func (r *RealMetricProvider) GetMetric(ctx context.Context, metricName string) (float64, error) {
+	value, ok := r.Metrics[metricName]
+	if !ok {
+		return 0, nil
+	}
+	return value, nil
+}
+
+func (r *RealMetricProvider) SetMetric(metricName string, value float64) {
+	r.Metrics[metricName] = value
+}
+
+// RealActionExecutor simulates a real system action executor
+// Exported for use in tests and other packages
+type RealActionExecutor struct {
+	ExecutedActions []policy.Action
+}
+
+func (r *RealActionExecutor) ExecuteAction(ctx context.Context, action policy.Action) error {
+	r.ExecutedActions = append(r.ExecutedActions, action)
+	return nil
+}
+
+func (r *RealActionExecutor) GetExecutedActions() []policy.Action {
+	return r.ExecutedActions
+}

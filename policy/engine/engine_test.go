@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"testing"
+	"time"
 
 	"github.com/google/uuid"
 	"github.com/seaweedfs/shardmanager/policy"
@@ -414,4 +415,117 @@ func TestEngine_EvaluatePolicies_ChainedPolicies(t *testing.T) {
 	require.NoError(t, err)
 	actions := actionExecutor.GetExecutedActions()
 	assert.Equal(t, []string{"reduce_cpu", "cleanup_disk"}, []string{actions[0].Type, actions[1].Type})
+}
+
+func TestEngine_Integration_RealSystem(t *testing.T) {
+	metricProvider := &RealMetricProvider{Metrics: make(map[string]float64)}
+	actionExecutor := &RealActionExecutor{ExecutedActions: make([]policy.Action, 0)}
+	engine := NewEngine(metricProvider, actionExecutor)
+	ctx := context.Background()
+
+	// Set up test metrics
+	metricProvider.SetMetric("cpu_usage", 90.0)
+	metricProvider.SetMetric("memory_usage", 85.0)
+
+	// Create a test policy
+	p := &policy.Policy{
+		ID:          uuid.New(),
+		Version:     "v1",
+		Name:        "integration-policy",
+		Description: "Integration test policy",
+		Type:        policy.PolicyTypeLoadBalancing,
+		Priority:    1,
+		Conditions: policy.Conditions{
+			All: []policy.Condition{
+				{
+					Metric:   "cpu_usage",
+					Operator: policy.OperatorGreaterThan,
+					Value:    80.0,
+				},
+				{
+					Metric:   "memory_usage",
+					Operator: policy.OperatorGreaterThan,
+					Value:    80.0,
+				},
+			},
+		},
+		Actions: []policy.Action{
+			{
+				Type: "migrate_shard",
+			},
+			{
+				Type: "notify_admin",
+			},
+		},
+	}
+
+	// Test policy evaluation
+	executed, err := engine.EvaluatePolicy(ctx, p)
+	require.NoError(t, err)
+	assert.True(t, executed)
+
+	// Verify actions were executed
+	actions := actionExecutor.GetExecutedActions()
+	require.Len(t, actions, 2)
+	assert.Equal(t, "migrate_shard", actions[0].Type)
+	assert.Equal(t, "notify_admin", actions[1].Type)
+}
+
+func TestEngine_Integration_PeriodicEvaluation(t *testing.T) {
+	metricProvider := &RealMetricProvider{Metrics: make(map[string]float64)}
+	actionExecutor := &RealActionExecutor{ExecutedActions: make([]policy.Action, 0)}
+	engine := NewEngine(metricProvider, actionExecutor)
+	ctx, cancel := context.WithTimeout(context.Background(), 2*time.Second)
+	defer cancel()
+
+	// Set up test metrics
+	metricProvider.SetMetric("cpu_usage", 90.0)
+	metricProvider.SetMetric("memory_usage", 85.0)
+
+	// Create a test policy
+	p := &policy.Policy{
+		ID:          uuid.New(),
+		Version:     "v1",
+		Name:        "periodic-policy",
+		Description: "Periodic evaluation test policy",
+		Type:        policy.PolicyTypeLoadBalancing,
+		Priority:    1,
+		Conditions: policy.Conditions{
+			All: []policy.Condition{
+				{
+					Metric:   "cpu_usage",
+					Operator: policy.OperatorGreaterThan,
+					Value:    80.0,
+				},
+				{
+					Metric:   "memory_usage",
+					Operator: policy.OperatorGreaterThan,
+					Value:    80.0,
+				},
+			},
+		},
+		Actions: []policy.Action{
+			{
+				Type: "migrate_shard",
+			},
+			{
+				Type: "notify_admin",
+			},
+		},
+	}
+
+	// Simulate periodic evaluation
+	ticker := time.NewTicker(500 * time.Millisecond)
+	defer ticker.Stop()
+
+	for {
+		select {
+		case <-ticker.C:
+			executed, err := engine.EvaluatePolicy(ctx, p)
+			require.NoError(t, err)
+			assert.True(t, executed)
+		case <-ctx.Done():
+			return
+		}
+	}
 }
