@@ -26,8 +26,23 @@ type Shard struct {
 	Size      int64
 	NodeID    *uuid.UUID
 	Status    string
+	Version   int
+	Metadata  json.RawMessage
 	CreatedAt time.Time
 	UpdatedAt time.Time
+}
+
+// ShardVersion represents a historical version of a shard
+type ShardVersion struct {
+	ID        uuid.UUID
+	ShardID   uuid.UUID
+	Version   int
+	Type      string
+	Size      int64
+	NodeID    *uuid.UUID
+	Status    string
+	Metadata  json.RawMessage
+	CreatedAt time.Time
 }
 
 // Policy represents a shard management policy

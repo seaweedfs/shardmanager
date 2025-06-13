@@ -24,8 +24,24 @@ CREATE TABLE shards (
     size BIGINT NOT NULL,
     node_id UUID REFERENCES nodes(id) ON DELETE SET NULL,
     status shard_status NOT NULL DEFAULT 'active',
+    version INTEGER NOT NULL DEFAULT 1,
+    metadata JSONB,
     created_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP
+);
+
+-- Shard version history
+CREATE TABLE shard_versions (
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    shard_id UUID NOT NULL REFERENCES shards(id) ON DELETE CASCADE,
+    version INTEGER NOT NULL,
+    type VARCHAR(50) NOT NULL,
+    size BIGINT NOT NULL,
+    node_id UUID REFERENCES nodes(id) ON DELETE SET NULL,
+    status shard_status NOT NULL,
+    metadata JSONB,
+    created_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    UNIQUE(shard_id, version)
 );
 
 -- Shard migration history
@@ -61,9 +77,11 @@ CREATE TABLE failure_reports (
 -- Create indexes
 CREATE INDEX idx_shards_node_id ON shards(node_id);
 CREATE INDEX idx_shards_status ON shards(status);
+CREATE INDEX idx_shards_version ON shards(version);
 CREATE INDEX idx_nodes_status ON nodes(status);
 CREATE INDEX idx_nodes_last_heartbeat ON nodes(last_heartbeat);
 CREATE INDEX idx_shard_migrations_shard_id ON shard_migrations(shard_id);
+CREATE INDEX idx_shard_versions_shard_id ON shard_versions(shard_id);
 CREATE INDEX idx_failure_reports_entity_id ON failure_reports(entity_id);
 
 -- Create updated_at trigger function

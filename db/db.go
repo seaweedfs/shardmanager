@@ -29,6 +29,12 @@ type DBOperations interface {
 	SetPolicy(ctx context.Context, policy *Policy) error
 	GetPolicy(ctx context.Context, policyType string) (*Policy, error)
 	ReportFailure(ctx context.Context, failureType string, entityID uuid.UUID, details json.RawMessage) error
+
+	// Version-related operations
+	GetShardVersion(ctx context.Context, shardID uuid.UUID, version int) (*ShardVersion, error)
+	ListShardVersions(ctx context.Context, shardID uuid.UUID) ([]*ShardVersion, error)
+	UpdateShardVersion(ctx context.Context, shard *Shard) error
+	RollbackShardVersion(ctx context.Context, shardID uuid.UUID, version int) error
 }
 
 func NewDB(dsn string) (*DB, error) {

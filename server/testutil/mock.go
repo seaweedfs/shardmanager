@@ -23,6 +23,10 @@ type DBOperations interface {
 	GetPolicy(ctx context.Context, policyType string) (*db.Policy, error)
 	ReportFailure(ctx context.Context, failureType string, entityID uuid.UUID, details json.RawMessage) error
 	Reset()
+	GetShardVersion(ctx context.Context, shardID uuid.UUID, version int) (*db.ShardVersion, error)
+	ListShardVersions(ctx context.Context, shardID uuid.UUID) ([]*db.ShardVersion, error)
+	UpdateShardVersion(ctx context.Context, shard *db.Shard) error
+	RollbackShardVersion(ctx context.Context, shardID uuid.UUID, version int) error
 }
 
 // MockDB implements DBOperations for testing
@@ -142,5 +146,25 @@ func (m *MockDB) GetPolicy(ctx context.Context, policyType string) (*db.Policy, 
 
 // ReportFailure mocks the ReportFailure operation
 func (m *MockDB) ReportFailure(ctx context.Context, failureType string, entityID uuid.UUID, details json.RawMessage) error {
+	return nil
+}
+
+// GetShardVersion mocks the GetShardVersion operation
+func (m *MockDB) GetShardVersion(ctx context.Context, shardID uuid.UUID, version int) (*db.ShardVersion, error) {
+	return nil, nil
+}
+
+// ListShardVersions mocks the ListShardVersions operation
+func (m *MockDB) ListShardVersions(ctx context.Context, shardID uuid.UUID) ([]*db.ShardVersion, error) {
+	return nil, nil
+}
+
+// UpdateShardVersion mocks the UpdateShardVersion operation
+func (m *MockDB) UpdateShardVersion(ctx context.Context, shard *db.Shard) error {
+	return nil
+}
+
+// RollbackShardVersion mocks the RollbackShardVersion operation
+func (m *MockDB) RollbackShardVersion(ctx context.Context, shardID uuid.UUID, version int) error {
 	return nil
 }

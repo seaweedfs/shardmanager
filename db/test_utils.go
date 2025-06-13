@@ -33,13 +33,30 @@ func setupTestDB(t *testing.T) *sql.DB {
 
 		CREATE TABLE IF NOT EXISTS shards (
 			id TEXT PRIMARY KEY,
-			node_id TEXT NOT NULL,
+			node_id TEXT,
 			type TEXT NOT NULL,
 			status TEXT NOT NULL,
 			size INTEGER NOT NULL,
+			version INTEGER NOT NULL DEFAULT 1,
+			metadata TEXT,
 			created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
 			updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
 			FOREIGN KEY (node_id) REFERENCES nodes(id)
+		);
+
+		CREATE TABLE IF NOT EXISTS shard_versions (
+			id TEXT PRIMARY KEY,
+			shard_id TEXT NOT NULL,
+			version INTEGER NOT NULL,
+			type TEXT NOT NULL,
+			size INTEGER NOT NULL,
+			node_id TEXT,
+			status TEXT NOT NULL,
+			metadata TEXT,
+			created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+			FOREIGN KEY (shard_id) REFERENCES shards(id) ON DELETE CASCADE,
+			FOREIGN KEY (node_id) REFERENCES nodes(id) ON DELETE SET NULL,
+			UNIQUE(shard_id, version)
 		);
 
 		CREATE TABLE IF NOT EXISTS policies (
